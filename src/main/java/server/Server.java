@@ -1,4 +1,4 @@
-package org.example;
+package server;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -6,12 +6,14 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class Server {
+// import org.json.simple.JSONObject;
+
+class Server {
     public static void main(String argv[]) throws Exception {
         String fromclient;
         String toclient;
 
-        ServerSocket Server = new ServerSocket(4444);
+        ServerSocket Server = new ServerSocket(5000);
 
         System.out.println("TCPServer Waiting for client on port 5000"); //client should use 5000 as port
 
