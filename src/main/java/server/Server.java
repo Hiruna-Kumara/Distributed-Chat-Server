@@ -10,12 +10,15 @@ import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class Server implements Runnable{
 
     private DataOutputStream out;
     private ServerSocket Server;
+    private static List<String> clientList = new ArrayList<String>();
 
     private boolean hasKey(JSONObject jsonObject, String key) {
         return (jsonObject != null && jsonObject.get(key) != null);
@@ -26,16 +29,27 @@ public class Server implements Runnable{
     }
 
     private void send(JSONObject obj) throws IOException {
-        System.out.println(obj.toJSONString()+"\n");
+//        System.out.println(obj.toJSONString()+"\n");
         out.write((obj.toJSONString() + "\n").getBytes("UTF-8"));
         out.flush();
     }
 
-    private void messageSend(Socket socket, String approve) throws IOException {
+    private void messageSend(Socket socket, String msg) throws IOException {
         JSONObject sendToClient = new JSONObject();
-        sendToClient = Massege.getApprovalNewID(approve);
+        sendToClient = Message.getApprovalNewID(msg);
         System.out.println(sendToClient);
         send(sendToClient);
+    }
+
+    private void newID(String id, Socket connected, String fromclient) throws IOException{
+        if (checkID(id) && !clientList.contains(id)) {
+            System.out.println("Recieved correct ID type::" + fromclient);
+            clientList.add(id);
+            messageSend(connected,"true");
+        } else {
+            System.out.println("Recieved wrong ID type:: The identity must be an alphanumeric string starting with an upper or lower case character. It must be at least 3 characters and no more than 16 characters long.");
+            messageSend(connected,"false");
+        }
     }
 
     @Override
@@ -78,13 +92,7 @@ public class Server implements Runnable{
                             //check new identity format
                             if (j_object.get("type").equals("newidentity") && j_object.get("identity") != null) {
                                 String id = j_object.get("identity").toString();
-                                if (checkID(id)) {
-                                    System.out.println("Recieved correct ID type::" + fromclient);
-                                    messageSend(connected,"true");
-                                } else {
-                                    System.out.println("Recieved wrong ID type:: The identity must be an alphanumeric string starting with an upper or lower case character. It must be at least 3 characters and no more than 16 characters long.");
-                                    messageSend(connected,"false");
-                                }
+                                newID(id, connected, fromclient);
                             }
                         } else {
                             System.out.println("Something went wrong");
