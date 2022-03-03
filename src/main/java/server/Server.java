@@ -19,8 +19,14 @@ public class Server implements Runnable{
     private DataOutputStream out;
     private ServerSocket Server;
     private static List<String> clientList = new ArrayList<String>();
+    private String serverID;
 
-    private boolean hasKey(JSONObject jsonObject, String key) {
+    public Server(String id){
+        this.serverID = id;
+    }
+
+
+        private boolean hasKey(JSONObject jsonObject, String key) {
         return (jsonObject != null && jsonObject.get(key) != null);
     }
 
@@ -36,19 +42,27 @@ public class Server implements Runnable{
 
     private void messageSend(Socket socket, String msg) throws IOException {
         JSONObject sendToClient = new JSONObject();
-        sendToClient = Message.getApprovalNewID(msg);
-        System.out.println(sendToClient);
-        send(sendToClient);
+        String[] array = msg.split(" ");
+        if (array[0].equals("newid")){
+            sendToClient = Message.getApprovalNewID(array[1]);
+            send(sendToClient);
+        } if (array[0].equals("roomchange")){
+            sendToClient = Message.getRoomChange(array[1],array[2]);
+            send(sendToClient);
+        }
     }
 
     private void newID(String id, Socket connected, String fromclient) throws IOException{
         if (checkID(id) && !clientList.contains(id)) {
             System.out.println("Recieved correct ID type::" + fromclient);
             clientList.add(id);
-            messageSend(connected,"true");
+            synchronized (connected) {
+                messageSend(connected,"newid true");
+                messageSend(connected,"roomchange "+id+" MainHall-"+serverID);
+            }
         } else {
             System.out.println("Recieved wrong ID type:: The identity must be an alphanumeric string starting with an upper or lower case character. It must be at least 3 characters and no more than 16 characters long.");
-            messageSend(connected,"false");
+            messageSend(connected,"newid false");
         }
     }
 
