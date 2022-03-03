@@ -1,45 +1,44 @@
 package server;
 
-// import client.ClientState;
-
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Room {
-    private final String ownerID;
-    private final String roomID;
-    private final int serverID;
+    private String owner;
+    private String roomId;
+    private List<ClientState> participants = new ArrayList<ClientState>();
 
-    private final HashMap<String,ClientState> clientStateMap = new HashMap<>();  //<clientID,clientState>
-
-
-    public Room(String ownerID, String roomID, int serverID) {
-        this.ownerID = ownerID;
-        this.roomID = roomID;
-        this.serverID = serverID;
+    public Room(String identity, String roomId) {
+        this.owner = identity;
+        this.roomId = roomId;
     }
 
-    public synchronized String getRoomID() {
-        return roomID;
+    public synchronized String getRoomId() {
+        return roomId;
     }
 
-    public synchronized int getServerID() {
-        return serverID;
+    public synchronized void setRoomId(String roomId) {
+        this.roomId = roomId;
     }
 
-    public synchronized HashMap<String, ClientState> getClientStateMap() {
-        return clientStateMap;
+    public synchronized String getParticipants() {
+        return roomId;
     }
 
-    public synchronized void addParticipants(ClientState clientState) {
-        this.clientStateMap.put(clientState.getClientID(), clientState);
+    public synchronized void addParticipants(ClientState participantID) {
+        this.participants.add(participantID);
     }
 
-    public synchronized void removeParticipants(String clientID) {
-        this.clientStateMap.remove(clientID);
+    public synchronized List<ClientState> getParticipants(List<ClientState> participantID) {
+        return this.participants;
+    }
+
+    public synchronized void removeParticipants(ClientState participantID) {
+        this.participants.remove(participantID);
     }
 
     public String getOwnerIdentity() {
-        return ownerID;
+        return owner;
     }
 
 }
