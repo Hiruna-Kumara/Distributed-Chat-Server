@@ -57,7 +57,7 @@ public class Server implements Runnable{
         out.flush();
     }
 
-    private void messageSend(Socket socket, String msg) throws IOException {
+    private void messageSend(Socket socket, String msg, List<String> msgList) throws IOException {
         JSONObject sendToClient = new JSONObject();
         String[] array = msg.split(" ");
         if (array[0].equals("newid")){
@@ -71,6 +71,9 @@ public class Server implements Runnable{
             send(sendToClient);
         } if (array[0].equals("createroomchange")) {
             sendToClient = Message.getCreateRoomChange(array[1], array[2], array[3]);
+            send(sendToClient);
+        } if (array[0].equals("roomcontents")) {
+            sendToClient = Message.getWho(array[1], msgList, array[2]);
             send(sendToClient);
         }
     }
@@ -86,12 +89,12 @@ public class Server implements Runnable{
             clientList.put(id, connected.getPort());
             reverseClientList.put(connected.getPort(), id);
             synchronized (connected) {
-                messageSend(connected, "newid true");
-                messageSend(connected, "roomchange " + id + " MainHall-" + serverID);
+                messageSend(connected, "newid true",null);
+                messageSend(connected, "roomchange " + id + " MainHall-" + serverID,null);
             }
         } else {
             System.out.println("Recieved wrong ID type or ID already in use");
-            messageSend(connected, "newid false");
+            messageSend(connected, "newid false",null);
         }
     }
 
@@ -111,14 +114,34 @@ public class Server implements Runnable{
 
             client.setRoomID(roomID);
 
+            newRoom.addParticipants(client);
+
             synchronized (connected) {
-                messageSend(connected, "createroom " + roomID + " true");
-                messageSend(connected, "createroomchange " + id + " "+ former +" " + roomID);
+                messageSend(connected, "createroom " + roomID + " true",null);
+                messageSend(connected, "createroomchange " + id + " "+ former +" " + roomID,null);
             }
         } else {
             System.out.println("Recieved wrong room ID type or room ID already in use");
-            messageSend(connected, "createroom " + roomID + " false");
+            messageSend(connected, "createroom " + roomID + " false",null);
         }
+    }
+
+//    who-list of clients in a room
+    private void who(Socket connected, String fromclient) throws IOException {
+        String id = reverseClientList.get(connected.getPort());
+        ClientState client = clientObjectList.get(id);
+        String roomID = client.getRoomID();
+        Room room = roomObjectList.get(roomID);
+        List<ClientState> clients = room.getParticipants();
+
+        List<String> participants = new ArrayList<String>();
+        System.out.println("room contains :");
+        for(int i=0;i< clients.size();i++){
+            participants.add(clients.get(i).getId());
+            System.out.println(clients.get(i).getId());
+        }
+        String owner = room.getOwnerIdentity();
+        messageSend(connected, "roomcontents " + roomID + " " + owner,participants);
     }
 
 
@@ -166,6 +189,8 @@ public class Server implements Runnable{
                             } if (j_object.get("type").equals("createroom") && j_object.get("roomid") != null) {
                                 String roomID = j_object.get("roomid").toString();
                                 createRoom(roomID, connected, fromclient);
+                            } if (j_object.get("type").equals("who")) {
+                                who(connected, fromclient);
                             }
                         } else {
                             System.out.println("Something went wrong");
