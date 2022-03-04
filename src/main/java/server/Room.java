@@ -1,41 +1,37 @@
 package server;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
 
 public class Room {
-    private String owner;
-    private String roomId;
-    private List<ClientState> participants = new ArrayList<ClientState>();
+    private final String ownerID;
+    private final String roomID;
 
-    public Room(String identity, String roomId) {
-        this.owner = identity;
-        this.roomId = roomId;
+    private final HashMap<String, ClientState> clientStateMap = new HashMap<>(); // <clientID,clientState>
+
+    // TODO : check sync keyword
+    public Room(String identity, String roomID) {
+        this.ownerID = identity;
+        this.roomID = roomID;
     }
 
-    public synchronized String getRoomId() {
-        return roomId;
+    public synchronized String getRoomID() {
+        return roomID;
     }
 
-    public synchronized void setRoomId(String roomId) {
-        this.roomId = roomId;
+    public synchronized HashMap<String, ClientState> getClientStateMap() {
+        return clientStateMap;
     }
 
-    public synchronized List<ClientState> getParticipants() {
-        return this.participants;
+    public synchronized void addParticipants(ClientState clientState) {
+        this.clientStateMap.put(clientState.getClientID(), clientState);
     }
 
-    public synchronized void addParticipants(ClientState participantID) {
-        this.participants.add(participantID);
-    }
-
-
-    public synchronized void removeParticipants(ClientState participantID) {
-        this.participants.remove(participantID);
+    public synchronized void removeParticipants(ClientState clientState) {
+        this.clientStateMap.remove(clientState.getClientID());
     }
 
     public String getOwnerIdentity() {
-        return owner;
+        return ownerID;
     }
 
 }
