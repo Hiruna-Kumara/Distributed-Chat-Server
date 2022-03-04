@@ -7,11 +7,11 @@ import java.util.ArrayList;
 
 public class Main {
     public static void main(String[] args) {
-        System.out.println("------server started------");
+        System.out.println("LOG  : ------server started------");
 
         // Create a Scanner object
         Scanner scanner = new Scanner(System.in);
-        System.out.println("Enter serverID");
+        System.out.println("INFO : Enter server ID : ");
         // input user ids
         String serverId = scanner.nextLine();
 
@@ -27,7 +27,7 @@ public class Main {
                 Socket socket = serverSocket.accept();
                 Server serverThread = new Server(socket);
                 // starting the tread
-                ServerState.getInstance().getServersList().add(serverThread);
+                ServerState.getInstance().addClientHandlerThreadToList(serverThread);
                 serverThread.start();
             }
 
