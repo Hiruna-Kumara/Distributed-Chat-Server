@@ -55,4 +55,12 @@ public class Message {
         join.put("owner",id);
         return join;
     }
+
+    @SuppressWarnings("unchecked")
+    public static JSONObject getList(List<String> rooms) {
+        JSONObject join = new JSONObject();
+        join.put("type", "roomlist");
+        join.put("rooms",rooms);
+        return join;
+    }
 }

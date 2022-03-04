@@ -10,34 +10,42 @@ import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.io.*;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.HashMap;
 
-public class Server implements Runnable{
+public class Server extends Thread{
 
     private DataOutputStream out;
     private ServerSocket Server;
+    private ArrayList<Server> threadList;
+    private Socket connected;
+
+    private PrintWriter output;
 
 //    client list
-    private HashMap<String, Integer> clientList = new HashMap<String, Integer>();
-    private HashMap<Integer, String> reverseClientList = new HashMap<Integer, String>();
+    private static HashMap<String, Integer> clientList = new HashMap<String, Integer>();
+    private static HashMap<Integer, String> reverseClientList = new HashMap<Integer, String>();
 //    global room list and ids
-    private HashMap<String, String> globalRoomList = new HashMap<String, String>();
+    private static HashMap<String, String> globalRoomList = new HashMap<String, String>();
     private String serverID;
 //    maintain room object list  clientID:clientObject
-    private HashMap<String, ClientState> clientObjectList = new HashMap<String, ClientState>();
+    private static HashMap<String, ClientState> clientObjectList = new HashMap<String, ClientState>();
 //    maintain room object list roomID:roomObject
-    private HashMap<String, Room> roomObjectList = new HashMap<String, Room>();
+    private static HashMap<String, Room> roomObjectList = new HashMap<String, Room>();
 //    Main hall
     private Room mainhall;
 
-    public Server(String id){
+    public Server(String id, Socket socket, ArrayList<Server> threads){
         this.serverID = id;
         mainhall = new Room("default-" + serverID, "MainHall-" + serverID);
         roomObjectList.put("MainHall-" + serverID, mainhall);
         globalRoomList.put("MainHall-" + serverID, "default-" + serverID);
+
+        this.connected = socket;
+        this.threadList = threads;
     }
 
 //    check whether the id exist
@@ -74,6 +82,9 @@ public class Server implements Runnable{
             send(sendToClient);
         } if (array[0].equals("roomcontents")) {
             sendToClient = Message.getWho(array[1], msgList, array[2]);
+            send(sendToClient);
+        } if (array[0].equals("roomlist")) {
+            sendToClient = Message.getList(msgList);
             send(sendToClient);
         }
     }
@@ -141,71 +152,89 @@ public class Server implements Runnable{
             System.out.println(clients.get(i).getId());
         }
         String owner = room.getOwnerIdentity();
-        messageSend(connected, "roomcontents " + roomID + " " + owner,participants);
+        messageSend(connected, "roomcontents " + roomID + " " + owner, participants);
+    }
+
+//    list of users
+    private void list(Socket connected, String fromclient) throws IOException {
+        List<String> rooms = new ArrayList<>();
+        System.out.println("rooms in the system :");
+        for(String r:roomObjectList.keySet()){
+            rooms.add(r);
+            System.out.println(r);
+        }
+
+        messageSend(connected, "roomlist ", rooms);
     }
 
 
     @Override
     public void run() {
-        String fromclient;
+//        String fromclient;
 
         try {
-            Server = new ServerSocket(5000);
-            System.out.println(Server.getInetAddress());
-            System.out.println(Server.getLocalSocketAddress());
-            System.out.println(Server.getLocalPort());
+//            Server = new ServerSocket(5000);
+//            System.out.println(Server.getInetAddress());
+//            System.out.println(Server.getLocalSocketAddress());
+//            System.out.println(Server.getLocalPort());
+            System.out.println(" THE CLIENT" + " " + connected.getInetAddress()
+                    + ":" + connected.getPort() + " IS CONNECTED ");
 
-            System.out.println("TCPServer Waiting for client on port 5000"); //client should use 5000 as port
+            BufferedReader inFromClient = new BufferedReader(
+                    new InputStreamReader(connected.getInputStream(), "UTF-8"));
+
+            out = new DataOutputStream(connected.getOutputStream());
+
+//            System.out.println("TCPServer Waiting for client on port 5000"); //client should use 5000 as port
 
             while (true) {
-                Socket connected = Server.accept();
-                System.out.println(" THE CLIENT" + " " + connected.getInetAddress()
-                        + ":" + connected.getPort() + " IS CONNECTED ");
+                String fromclient = inFromClient.readLine();
 
-                BufferedReader inFromClient = new BufferedReader(
-                        new InputStreamReader(connected.getInputStream(), StandardCharsets.UTF_8));
-
-                out = new DataOutputStream(connected.getOutputStream());
-
-                boolean close = false;
-
-                while (!close) {
-
-                    fromclient = inFromClient.readLine();
-
-                    //convert received message to json object
-
-                    try {
-                        Object object = null;
-                        JSONParser jsonParser = new JSONParser();
-                        object = jsonParser.parse(fromclient);
-                        JSONObject j_object = (JSONObject) object;
-
-                        if (hasKey(j_object, "type")) {
-                            //check new identity format
-                            if (j_object.get("type").equals("newidentity") && j_object.get("identity") != null) {
-                                String id = j_object.get("identity").toString();
-                                newID(id, connected, fromclient);
-                            } if (j_object.get("type").equals("createroom") && j_object.get("roomid") != null) {
-                                String roomID = j_object.get("roomid").toString();
-                                createRoom(roomID, connected, fromclient);
-                            } if (j_object.get("type").equals("who")) {
-                                who(connected, fromclient);
-                            }
-                        } else {
-                            System.out.println("Something went wrong");
-                        }
-
-                    } catch (ParseException e) {
-                        e.printStackTrace();
-                    }
+                if(fromclient.equalsIgnoreCase("exit")){
+                    break;
                 }
-                connected.close();
 
+                try {
+                    //convert received message to json object
+                    Object object = null;
+                    JSONParser jsonParser = new JSONParser();
+                    object = jsonParser.parse(fromclient);
+                    JSONObject j_object = (JSONObject) object;
+
+                    if (hasKey(j_object, "type")) {
+                        //check new identity format
+                        if (j_object.get("type").equals("newidentity") && j_object.get("identity") != null) {
+                            String id = j_object.get("identity").toString();
+                            newID(id, connected, fromclient);
+                        } //check create room
+                        if (j_object.get("type").equals("createroom") && j_object.get("roomid") != null) {
+                            String roomID = j_object.get("roomid").toString();
+                            createRoom(roomID, connected, fromclient);
+                        } //check who
+                        if (j_object.get("type").equals("who")) {
+                            who(connected, fromclient);
+                        } //check list
+                        if (j_object.get("type").equals("list")) {
+                            list(connected, fromclient);
+                        }
+                    } else {
+                        System.out.println("Something went wrong");
+                    }
+
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
             }
+
         } catch (IOException e) {
             e.printStackTrace();
         }
 
+    }
+
+    private void printToAllClients(String fromclient){
+        for(Server thread:threadList){
+            thread.output.println(fromclient);
+        }
     }
 }
