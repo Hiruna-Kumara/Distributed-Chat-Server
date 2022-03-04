@@ -4,67 +4,46 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.ServerSocket;
+import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
-import java.io.*;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.HashMap;
 
 public class Server extends Thread {
 
-    private DataOutputStream out;
-    private ServerSocket Server;
+    private String serverID; // server id which is given when starting the server
     private Socket clientSocket;
+    // TODO : have client state in thread
 
-    private PrintWriter output;
-
-    // client list
-    private static HashMap<String, Integer> clientList = new HashMap<String, Integer>();
-    private static HashMap<Integer, String> reverseClientList = new HashMap<Integer, String>();
-    // global room list and ids
-    private static HashMap<String, String> globalRoomList = new HashMap<String, String>();
-    private String serverID;
-    // maintain room object list clientID:clientObject
-    private static HashMap<String, ClientState> clientObjectList = new HashMap<String, ClientState>();
-    // maintain room object list roomID:roomObject
-    private static HashMap<String, Room> roomObjectList = new HashMap<String, Room>();
-    // Main hall
-    private Room mainhall;
+    // TODO : check input stream local var
+    private DataOutputStream dataOutputStream;
 
     public Server(Socket clientSocket) {
         this.serverID = ServerState.getInstance().getServerID();
-        mainhall = new Room("default-" + serverID, "MainHall-" + serverID);
-        roomObjectList.put("MainHall-" + serverID, mainhall);
-        globalRoomList.put("MainHall-" + serverID, "default-" + serverID);
-
+        ServerState.getInstance().getRoomMap().put("MainHall-" + serverID, ServerState.getInstance().getMainHall());
+        ServerState.getInstance().getOwnerRoomServerLocalMap().put("MainHall-" + serverID, "default-" + serverID);
         this.clientSocket = clientSocket;
     }
 
-    // check whether the id exist
+    // check the existence of a key in json object
     private boolean hasKey(JSONObject jsonObject, String key) {
         return (jsonObject != null && jsonObject.get(key) != null);
     }
 
-    // Id validation
+    // check validity of the ID
     private boolean checkID(String id) {
         return (Character.toString(id.charAt(0)).matches("[a-zA-Z]+") && id.matches("[a-zA-Z0-9]+") && id.length() >= 3
                 && id.length() <= 16);
     }
 
-    // massage to client
+    // send message to client
     private void send(JSONObject obj) throws IOException {
-        // System.out.println(obj.toJSONString()+"\n");
-        out.write((obj.toJSONString() + "\n").getBytes("UTF-8"));
-        out.flush();
+        dataOutputStream.write((obj.toJSONString() + "\n").getBytes("UTF-8"));
+        dataOutputStream.flush();
     }
 
+    // format message before sending it to client
     private void messageSend(Socket socket, String msg, List<String> msgList) throws IOException {
         JSONObject sendToClient = new JSONObject();
         String[] array = msg.split(" ");
@@ -94,16 +73,19 @@ public class Server extends Thread {
         }
     }
 
-    private void newID(String id, Socket connected, String fromclient) throws IOException {
-        if (checkID(id) && !clientObjectList.containsKey(id)) {
-            System.out.println("Recieved correct ID ::" + fromclient);
+    // new identity
+    private void newID(String id, Socket connected, String fromClient) throws IOException {
+        if (checkID(id) && !ServerState.getInstance().getClientStateMap().containsKey(id)) {
+            System.out.println("Recieved correct ID ::" + fromClient);
 
-            ClientState client = new ClientState(id, mainhall.getRoomId(), connected.getPort());
-            mainhall.addParticipants(client);
-            clientObjectList.put(id, client);
+            ClientState client = new ClientState(id, ServerState.getInstance().getMainHall().getRoomId(),
+                    connected.getPort());
+            ServerState.getInstance().getMainHall().addParticipants(client);
+            ServerState.getInstance().getClientStateMap().put(id, client);
 
-            clientList.put(id, connected.getPort());
-            reverseClientList.put(connected.getPort(), id);
+            ServerState.getInstance().getClientPortMap().put(id, connected.getPort());
+            ServerState.getInstance().getPortClientMap().put(connected.getPort(), id);
+
             synchronized (connected) {
                 messageSend(connected, "newid true", null);
                 messageSend(connected, "roomchange " + id + " MainHall-" + serverID, null);
@@ -115,18 +97,19 @@ public class Server extends Thread {
     }
 
     // create room
-    private void createRoom(String roomID, Socket connected, String fromclient) throws IOException {
-        String id = reverseClientList.get(connected.getPort());
-        if (checkID(roomID) && !roomObjectList.containsKey(roomID) && !globalRoomList.containsValue(id)) {
-            System.out.println("Recieved correct room ID ::" + fromclient);
+    private void createRoom(String roomID, Socket connected, String fromClient) throws IOException {
+        String id = ServerState.getInstance().getPortClientMap().get(connected.getPort());
+        if (checkID(roomID) && !ServerState.getInstance().getRoomMap().containsKey(roomID)
+                && !ServerState.getInstance().getOwnerRoomServerLocalMap().containsValue(id)) {
+            System.out.println("Recieved correct room ID ::" + fromClient);
 
-            ClientState client = clientObjectList.get(id);
+            ClientState client = ServerState.getInstance().getClientStateMap().get(id);
             String former = client.getRoomID();
-            roomObjectList.get(former).removeParticipants(client);
+            ServerState.getInstance().getRoomMap().get(former).removeParticipants(client);
 
             Room newRoom = new Room(id, roomID);
-            roomObjectList.put(roomID, newRoom);
-            globalRoomList.put(roomID, id);
+            ServerState.getInstance().getRoomMap().put(roomID, newRoom);
+            ServerState.getInstance().getOwnerRoomServerLocalMap().put(roomID, id);
 
             client.setRoomID(roomID);
 
@@ -142,12 +125,12 @@ public class Server extends Thread {
         }
     }
 
-    // who-list of clients in a room
-    private void who(Socket connected, String fromclient) throws IOException {
-        String id = reverseClientList.get(connected.getPort());
-        ClientState client = clientObjectList.get(id);
+    // who
+    private void who(Socket connected, String fromClient) throws IOException {
+        String id = ServerState.getInstance().getPortClientMap().get(connected.getPort());
+        ClientState client = ServerState.getInstance().getClientStateMap().get(id);
         String roomID = client.getRoomID();
-        Room room = roomObjectList.get(roomID);
+        Room room = ServerState.getInstance().getRoomMap().get(roomID);
         List<ClientState> clients = room.getParticipants();
 
         List<String> participants = new ArrayList<String>();
@@ -160,52 +143,36 @@ public class Server extends Thread {
         messageSend(connected, "roomcontents " + roomID + " " + owner, participants);
     }
 
-    // list of users
-    private void list(Socket connected, String fromclient) throws IOException {
+    // list
+    private void list(Socket connected, String fromClient) throws IOException {
         List<String> rooms = new ArrayList<>();
         System.out.println("rooms in the system :");
-        for (String r : roomObjectList.keySet()) {
+        for (String r : ServerState.getInstance().getRoomMap().keySet()) {
             rooms.add(r);
             System.out.println(r);
         }
-
         messageSend(connected, "roomlist ", rooms);
     }
 
     @Override
     public void run() {
-        // String fromclient;
-
         try {
-            // Server = new ServerSocket(5000);
-            // System.out.println(Server.getInetAddress());
-            // System.out.println(Server.getLocalSocketAddress());
-            // System.out.println(Server.getLocalPort());
             System.out.println(" THE CLIENT" + " " + clientSocket.getInetAddress()
                     + ":" + clientSocket.getPort() + " IS CONNECTED ");
-
             BufferedReader inFromClient = new BufferedReader(
-                    new InputStreamReader(clientSocket.getInputStream(), "UTF-8"));
-
-            out = new DataOutputStream(clientSocket.getOutputStream());
-
-            // System.out.println("TCPServer Waiting for client on port 5000"); //client
-            // should use 5000 as port
-
+                    new InputStreamReader(clientSocket.getInputStream(), StandardCharsets.UTF_8));
+            dataOutputStream = new DataOutputStream(clientSocket.getOutputStream());
             while (true) {
                 String fromclient = inFromClient.readLine();
-
                 if (fromclient.equalsIgnoreCase("exit")) {
                     break;
                 }
-
                 try {
                     // convert received message to json object
                     Object object = null;
                     JSONParser jsonParser = new JSONParser();
                     object = jsonParser.parse(fromclient);
                     JSONObject j_object = (JSONObject) object;
-
                     if (hasKey(j_object, "type")) {
                         // check new identity format
                         if (j_object.get("type").equals("newidentity") && j_object.get("identity") != null) {
@@ -225,21 +192,12 @@ public class Server extends Thread {
                     } else {
                         System.out.println("Something went wrong");
                     }
-
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
             }
-
         } catch (IOException e) {
             e.printStackTrace();
-        }
-
-    }
-
-    private void printToAllClients(String fromclient) {
-        for (Server thread : ServerState.getInstance().getServerList()) {
-            thread.output.println(fromclient);
         }
     }
 }

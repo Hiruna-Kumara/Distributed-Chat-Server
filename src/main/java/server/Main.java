@@ -10,15 +10,15 @@ public class Main {
         System.out.println("------server started------");
 
         // Create a Scanner object
-        Scanner serverIdScanner = new Scanner(System.in);
+        Scanner scanner = new Scanner(System.in);
         System.out.println("Enter serverID");
         // input user ids
-        String serverId = serverIdScanner.nextLine();
+        String serverId = scanner.nextLine();
 
-        ServerState.getInstance().setServerID(serverId);
+        ServerState.getInstance().initializeWithConfigs(serverId, 5000);// TODO : change to auto fetch from config
 
         try {
-            ServerSocket serverSocket = new ServerSocket(5000);
+            ServerSocket serverSocket = new ServerSocket(ServerState.getInstance().getServerPort());
             System.out.println(serverSocket.getInetAddress());
             System.out.println(serverSocket.getLocalSocketAddress());
             System.out.println(serverSocket.getLocalPort());
@@ -27,7 +27,7 @@ public class Main {
                 Socket socket = serverSocket.accept();
                 Server serverThread = new Server(socket);
                 // starting the tread
-                ServerState.getInstance().getServerList().add(serverThread);
+                ServerState.getInstance().getServersList().add(serverThread);
                 serverThread.start();
             }
 
