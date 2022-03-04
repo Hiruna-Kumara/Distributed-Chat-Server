@@ -21,17 +21,14 @@ public class Room {
         this.roomId = roomId;
     }
 
-    public synchronized String getParticipants() {
-        return roomId;
+    public synchronized List<ClientState> getParticipants() {
+        return this.participants;
     }
 
     public synchronized void addParticipants(ClientState participantID) {
         this.participants.add(participantID);
     }
 
-    public synchronized List<ClientState> getParticipants(List<ClientState> participantID) {
-        return this.participants;
-    }
 
     public synchronized void removeParticipants(ClientState participantID) {
         this.participants.remove(participantID);
