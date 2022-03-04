@@ -1,19 +1,38 @@
 package server;
 
 import java.util.Scanner;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.ArrayList;
 
 public class Main
 {
     public static void main( String[] args ) {
         System.out.println("------server started------");
 
-        Scanner serverID = new Scanner(System.in);  // Create a Scanner object
+//        Create a Scanner object
+        Scanner serverID = new Scanner(System.in);
         System.out.println("Enter serverID");
+//        input user ids
         String serverid = serverID.nextLine();
 
-        // start sending thread
-        Server serverThread = new Server(serverid);
-        Thread sendThread = new Thread(serverThread);
-        sendThread.start();
+        ArrayList<Server> threadList = new ArrayList<>();
+        try {
+            ServerSocket serverSocket = new ServerSocket(5000);
+            System.out.println(serverSocket.getInetAddress());
+            System.out.println(serverSocket.getLocalSocketAddress());
+            System.out.println(serverSocket.getLocalPort());
+            System.out.println("TCPServer Waiting for client on port 5000"); //client should use 5000 as port
+            while (true) {
+                Socket socket = serverSocket.accept();
+                Server serverThread = new Server(serverid, socket, threadList);
+                //starting the tread
+                threadList.add(serverThread);
+                serverThread.start();
+            }
+
+        } catch (Exception e) {
+            System.out.println("Error occured in main " + e.getStackTrace());
+        }
     }
 }

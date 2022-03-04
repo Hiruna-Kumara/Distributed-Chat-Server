@@ -1,6 +1,7 @@
 package server;
 
 import org.json.simple.JSONObject;
+import java.util.*;
 
 public class Message {
 
@@ -41,6 +42,25 @@ public class Message {
         join.put("identity", id);
         join.put("former",former);
         join.put("roomid",roomID);
+        return join;
+    }
+
+//    {"type" : "who"}
+    @SuppressWarnings("unchecked")
+    public static JSONObject getWho(String roomID, List<String> participants, String id) {
+        JSONObject join = new JSONObject();
+        join.put("type", "roomcontents");
+        join.put("roomid", roomID);
+        join.put("identities",participants);
+        join.put("owner",id);
+        return join;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static JSONObject getList(List<String> rooms) {
+        JSONObject join = new JSONObject();
+        join.put("type", "roomlist");
+        join.put("rooms",rooms);
         return join;
     }
 }
