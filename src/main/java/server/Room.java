@@ -4,20 +4,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Room {
-    private String owner;
+    private String ownerID;
     private String roomId;
     private List<ClientState> participants = new ArrayList<ClientState>();
 
     public Room(String identity, String roomId) {
-        this.owner = identity;
+        this.ownerID = identity;
         this.roomId = roomId;
     }
 
-    public synchronized String getRoomId() {
+    public synchronized String getRoomID() {
         return roomId;
     }
 
-    public synchronized void setRoomId(String roomId) {
+    public synchronized void setRoomID(String roomId) {
         this.roomId = roomId;
     }
 
@@ -29,13 +29,12 @@ public class Room {
         this.participants.add(participantID);
     }
 
-
     public synchronized void removeParticipants(ClientState participantID) {
         this.participants.remove(participantID);
     }
 
     public String getOwnerIdentity() {
-        return owner;
+        return ownerID;
     }
 
 }

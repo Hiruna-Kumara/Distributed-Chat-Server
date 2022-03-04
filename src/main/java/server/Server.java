@@ -12,17 +12,16 @@ import java.util.List;
 
 public class Server extends Thread {
 
-    private String serverID; // server id which is given when starting the server
-    private Socket clientSocket;
+    private final Socket clientSocket;
     // TODO : have client state in thread
 
     // TODO : check input stream local var
     private DataOutputStream dataOutputStream;
 
     public Server(Socket clientSocket) {
-        this.serverID = ServerState.getInstance().getServerID();
+        String serverID = ServerState.getInstance().getServerID();
         ServerState.getInstance().getRoomMap().put("MainHall-" + serverID, ServerState.getInstance().getMainHall());
-        ServerState.getInstance().getOwnerRoomServerLocalMap().put("MainHall-" + serverID, "default-" + serverID);
+
         this.clientSocket = clientSocket;
     }
 
@@ -78,7 +77,7 @@ public class Server extends Thread {
         if (checkID(id) && !ServerState.getInstance().getClientStateMap().containsKey(id)) {
             System.out.println("Recieved correct ID ::" + fromClient);
 
-            ClientState client = new ClientState(id, ServerState.getInstance().getMainHall().getRoomId(),
+            ClientState client = new ClientState(id, ServerState.getInstance().getMainHall().getRoomID(),
                     connected.getPort());
             ServerState.getInstance().getMainHall().addParticipants(client);
             ServerState.getInstance().getClientStateMap().put(id, client);
@@ -88,7 +87,8 @@ public class Server extends Thread {
 
             synchronized (connected) {
                 messageSend(connected, "newid true", null);
-                messageSend(connected, "roomchange " + id + " MainHall-" + serverID, null);
+                messageSend(connected, "roomchange " + id + " MainHall-" + ServerState.getInstance().getServerID(),
+                        null);
             }
         } else {
             System.out.println("Recieved wrong ID type or ID already in use");
@@ -99,8 +99,7 @@ public class Server extends Thread {
     // create room
     private void createRoom(String roomID, Socket connected, String fromClient) throws IOException {
         String id = ServerState.getInstance().getPortClientMap().get(connected.getPort());
-        if (checkID(roomID) && !ServerState.getInstance().getRoomMap().containsKey(roomID)
-                && !ServerState.getInstance().getOwnerRoomServerLocalMap().containsValue(id)) {
+        if (checkID(roomID) && !ServerState.getInstance().getRoomMap().containsKey(roomID)) {
             System.out.println("Recieved correct room ID ::" + fromClient);
 
             ClientState client = ServerState.getInstance().getClientStateMap().get(id);
@@ -109,7 +108,6 @@ public class Server extends Thread {
 
             Room newRoom = new Room(id, roomID);
             ServerState.getInstance().getRoomMap().put(roomID, newRoom);
-            ServerState.getInstance().getOwnerRoomServerLocalMap().put(roomID, id);
 
             client.setRoomID(roomID);
 

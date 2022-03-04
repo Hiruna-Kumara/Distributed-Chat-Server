@@ -10,19 +10,14 @@ public class ServerState {
     private Room mainHall;
     private final ArrayList<Server> clientHandlerList = new ArrayList<>();
 
-    private final HashMap<String, Integer> clientPortMap = new HashMap<String, Integer>(); // client list
-                                                                                           // <clientID,port>
-    private final HashMap<Integer, String> portClientMap = new HashMap<Integer, String>(); // client list
-                                                                                           // <port,clientID>
-    private final HashMap<String, String> ownerRoomServerLocalMap = new HashMap<String, String>(); // global rooms with
-                                                                                                   // their owners
-                                                                                                   // <roomID,ownerID>
+    private final HashMap<String, Integer> clientPortMap = new HashMap<>(); // client list <clientID,port>
+    private final HashMap<Integer, String> portClientMap = new HashMap<>(); // client list <port,clientID>
+    private final HashMap<String, String> ownerRoomServerLocalMap = new HashMap<>(); // global rooms with their owners
+                                                                                     // <roomID,ownerID>
 
-    private final HashMap<String, ClientState> clientStateMap = new HashMap<String, ClientState>(); // maintain room
-                                                                                                    // object list
-                                                                                                    // <clientID,clientState>
-    private final HashMap<String, Room> roomMap = new HashMap<String, Room>(); // maintain room object list
-                                                                               // <roomID,roomObject>
+    private final HashMap<String, ClientState> clientStateMap = new HashMap<>(); // maintain room object list
+                                                                                 // <clientID,clientState>
+    private final HashMap<String, Room> roomMap = new HashMap<>(); // maintain room object list <roomID,roomObject>
 
     // singleton
     private static ServerState serverStateInstance;
