@@ -15,7 +15,7 @@ public class Main {
         // input user ids
         String serverId = scanner.nextLine();
 
-        ServerState.getInstance().initializeWithConfigs(serverId, 5000);// TODO : change to auto fetch from config
+        ServerState.getInstance().initializeWithConfigs(serverId, 5000); // TODO : change to auto fetch from config
 
         try {
             ServerSocket serverSocket = new ServerSocket(ServerState.getInstance().getServerPort());
@@ -35,4 +35,5 @@ public class Main {
             System.out.println("Error occured in main " + e.getStackTrace());
         }
     }
+
 }
