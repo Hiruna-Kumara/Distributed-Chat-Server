@@ -1,11 +1,16 @@
 package server;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.*;
 
 public class ServerState {
 
     private String serverID;
-    private int serverPort;
+    private String serverAddress = null;
+    private int coordinationPort;
+    private int clientsPort;
+
     private Room mainHall;
     private final ArrayList<Server> clientHandlerList = new ArrayList<>();
 
@@ -28,10 +33,28 @@ public class ServerState {
         return serverStateInstance;
     }
 
-    // TODO : make private, init with get instance and configs at startup
-    public void initializeWithConfigs(String serverID, int serverPort) {
+    public void initializeWithConfigs(String serverID, String serverConfPath) {
+
         this.serverID = serverID;
-        this.serverPort = serverPort;
+
+        try {
+            File conf = new File(serverConfPath); // read configuration
+            Scanner myReader = new Scanner(conf);
+            while (myReader.hasNextLine()) {
+                String data = myReader.nextLine();
+                String[] params = data.split(" ");
+                if (params[0].equals(serverID)) {
+                    this.serverAddress = params[1];
+                    this.clientsPort = Integer.parseInt(params[2]);
+                    this.coordinationPort = Integer.parseInt(params[3]);
+                }
+            }
+            myReader.close();
+        } catch (FileNotFoundException e) {
+            System.out.println("Configs file not found");
+            e.printStackTrace();
+        }
+
         this.mainHall = new Room("default-" + serverID, "MainHall-" + serverID);
         this.roomMap.put("MainHall-" + serverID, mainHall);
     }
@@ -53,8 +76,16 @@ public class ServerState {
         return serverID;
     }
 
-    public int getServerPort() {
-        return serverPort;
+    public int getClientsPort() {
+        return clientsPort;
+    }
+
+    public String getServerAddress() {
+        return serverAddress;
+    }
+
+    public int getCoordinationPort() {
+        return coordinationPort;
     }
 
     public Room getMainHall() {
@@ -63,5 +94,9 @@ public class ServerState {
 
     public HashMap<String, Room> getRoomMap() {
         return roomMap;
+    }
+
+    public ArrayList<Server> getClientHandlerThreadList() {
+        return clientHandlerList;
     }
 }
