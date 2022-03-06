@@ -1,9 +1,12 @@
 package server;
 
+import heartbeat.GossipJob;
+
 import java.util.Scanner;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+
 
 public class Main {
     public static void main(String[] args) {
@@ -23,6 +26,18 @@ public class Main {
             System.out.println(serverSocket.getLocalSocketAddress());
             System.out.println(serverSocket.getLocalPort());
             System.out.println("TCPServer Waiting for client on port 5000"); // client should use 5000 as port
+
+
+            /**
+             Heartbeat detection using gossiping
+             **/
+            // if (isGossip) {
+            //     System.out.println("INFO : Failure Detection is running GOSSIP mode");
+            //     Runnable gossip = new GossipJob();
+            //     new Thread(gossip).start();
+            //     startConsensus();
+            // }
+
             while (true) {
                 Socket socket = serverSocket.accept();
                 Server serverThread = new Server(socket);
