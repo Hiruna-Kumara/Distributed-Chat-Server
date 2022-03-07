@@ -6,6 +6,8 @@ import java.util.Scanner;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import org.quartz.*;
+import org.quartz.impl.StdSchedulerFactory;
 
 
 public class Main {
@@ -38,6 +40,12 @@ public class Main {
             //     startConsensus();
             // }
 
+            // if (true) {
+            //     System.out.println("INFO : Failure Detection is running GOSSIP mode");
+            //     startGossip();
+            //     startConsensus();
+            // }
+
             while (true) {
                 Socket socket = serverSocket.accept();
                 Server serverThread = new Server(socket);
@@ -50,5 +58,30 @@ public class Main {
             System.out.println("Error occured in main " + e.getStackTrace());
         }
     }
+
+    // private static void startGossip() {
+    //     try {
+
+    //         JobDetail gossipJob = JobBuilder.newJob(GossipJob.class)
+    //                 .withIdentity(Constant.GOSSIP_JOB, "group1").build();
+
+    //         gossipJob.getJobDataMap().put("aliveErrorFactor", alive_error_factor);
+
+    //         Trigger gossipTrigger = TriggerBuilder
+    //                 .newTrigger()
+    //                 .withIdentity(Constant.GOSSIP_JOB_TRIGGER, "group1")
+    //                 .withSchedule(
+    //                         SimpleScheduleBuilder.simpleSchedule()
+    //                                 .withIntervalInSeconds(alive_interval).repeatForever())
+    //                 .build();
+
+    //         Scheduler scheduler = new StdSchedulerFactory().getScheduler();
+    //         scheduler.start();
+    //         scheduler.scheduleJob(gossipJob, gossipTrigger);
+
+    //     } catch (SchedulerException e) {
+    //         System.out.println("ERROR : Error in starting gossiping");
+    //     }
+    // }
 
 }
