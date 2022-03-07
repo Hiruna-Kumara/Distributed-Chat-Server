@@ -45,9 +45,7 @@ public class Server extends Thread {
             PrintWriter TEMP_OUT = new PrintWriter(TEMP_SOCK.getOutputStream());
             TEMP_OUT.println(obj);
             TEMP_OUT.flush();
-            System.out.println("Sent to: " + TEMP_SOCK.getLocalAddress().getHostName() + TEMP_SOCK.getPort()); // displayed
-                                                                                                               // in the
-                                                                                                               // console
+//            System.out.println("Sent to: " + TEMP_SOCK.getLocalAddress().getHostName() + TEMP_SOCK.getPort()); // displayed in the console
         }
     }
 
@@ -70,7 +68,7 @@ public class Server extends Thread {
         } else if (array[0].equals("createroom")) {
             sendToClient = Message.getCreateRoom(array[1], array[2]);
             send(sendToClient);
-        } else if (array[0].equals("createroomchange")) {
+        } else if (array[0].equals("roomchangeall")) {
             sendToClient = Message.getCreateRoomChange(array[1], array[2], array[3]);
 //            send(sendToClient);
             sendBroadcast(sendToClient, socketList);
@@ -140,11 +138,10 @@ public class Server extends Thread {
             String former = clientState.getRoomID();
             HashMap<String, ClientState> clientList = ServerState.getInstance().getRoomMap().get(former).getClientStateMap();
 
+//            create broadcast list
             ArrayList<Socket> formerSocket = new ArrayList<>();
             for (String each:clientList.keySet()){
-                if (clientList.get(each).getRoomID().equals(former)){
-                    formerSocket.add(clientList.get(each).getSocket());
-                }
+                formerSocket.add(clientList.get(each).getSocket());
             }
             ServerState.getInstance().getRoomMap().get(formerRoomID).removeParticipants(clientState);
 
@@ -156,7 +153,7 @@ public class Server extends Thread {
 
             synchronized (connected) {
                 messageSend(null, "createroom " + newRoomID + " true", null);
-                messageSend(formerSocket, "createroomchange " + clientState.getClientID() + " " + formerRoomID + " " + newRoomID, null);
+                messageSend(formerSocket, "roomchangeall " + clientState.getClientID() + " " + formerRoomID + " " + newRoomID, null);
             }
         } else {
             System.out.println("WARN : Recieved wrong room ID type or room ID already in use");
@@ -174,7 +171,17 @@ public class Server extends Thread {
             ServerState.getInstance().getRoomMap().get(formerRoomId).removeParticipants(clientState);
             ServerState.getInstance().getRoomMap().get(roomID).addParticipants(clientState);
             System.out.println("INFO : client [" + clientState.getClientID() + "] joined room :" + roomID);
-            messageSend(null, "roomchange " + clientState.getClientID() + " " + formerRoomId + " " + roomID, null);
+            //create broadcast list
+            HashMap<String, ClientState> clientList = ServerState.getInstance().getRoomMap().get(roomID).getClientStateMap();
+            HashMap<String, ClientState> clientListOld = ServerState.getInstance().getRoomMap().get(formerRoomId).getClientStateMap();
+            clientList.putAll(clientListOld);
+
+            ArrayList<Socket> SocketList = new ArrayList<>();
+            for (String each:clientList.keySet()){
+                SocketList.add(clientList.get(each).getSocket());
+            }
+
+            messageSend(SocketList, "roomchangeall " + clientState.getClientID() + " " + formerRoomId + " " + roomID, null);
             // TODO : check global, route and server change
             // } else if(inAnotherServer){
         } else {
@@ -194,34 +201,28 @@ public class Server extends Thread {
 
                 String mainHallRoomID = ServerState.getInstance().getMainHall().getRoomID();
 
-                System.out.println("INFO : room [" + roomID + "] was deleted by : " + clientState.getClientID());
+                HashMap<String,ClientState> formerClientList = ServerState.getInstance().getRoomMap().get(roomID).getClientStateMap();
+                HashMap<String,ClientState> mainHallClientList = ServerState.getInstance().getRoomMap().get(mainHallRoomID).getClientStateMap();
+                mainHallClientList.putAll(formerClientList);
 
-                // TODO : move all members to mainhall and show for ones already in mainhall
-                // room.getClientStateMap().entrySet().forEach(entry -> {
-                // String s = entry.getKey();
-                // ClientState clientStateInRoom = entry.getValue();
-                // ServerState.getInstance().getClientHandlerThreadList().forEach(clientHandlerThread
-                // -> {
-                // if
-                // (clientHandlerThread.clientState.getClientID().equals(clientStateInRoom.getClientID()))
-                // {
-                // try {
-                // clientHandlerThread.joinRoom(mainHallRoomID,
-                // clientHandlerThread.clientSocket, "");
-                // } catch (IOException e) {
-                // e.printStackTrace();
-                // }
-                // }
-                // });
-                // });
+                ArrayList<Socket> socketList = new ArrayList<>();
+                for (String each:mainHallClientList.keySet()){
+                    socketList.add(mainHallClientList.get(each).getSocket());
+                }
 
                 clientState.setRoomID(mainHallRoomID);
                 ServerState.getInstance().getRoomMap().remove(roomID);
                 ServerState.getInstance().getRoomMap().get(mainHallRoomID).addParticipants(clientState);
 
+                for(String client:formerClientList.keySet()){
+                    String id = formerClientList.get(client).getClientID();
+                    messageSend(socketList, "roomchangeall " + id + " " + roomID + " " + mainHallRoomID, null);
+                }
+
                 messageSend(null, "deleteroom " + roomID + " true", null);
-                messageSend(null, "roomchange " + clientState.getClientID() + " " + roomID + " " + mainHallRoomID,
-                        null);
+//                messageSend(null, "roomchange " + clientState.getClientID() + " " + roomID + " " + mainHallRoomID, null);
+
+                System.out.println("INFO : room [" + roomID + "] was deleted by : " + clientState.getClientID());
 
             } else {
                 messageSend(null, "deleteroom " + roomID + " false", null);
@@ -244,9 +245,10 @@ public class Server extends Thread {
         HashMap<String, ClientState> clientList = ServerState.getInstance().getRoomMap().get(roomid)
                 .getClientStateMap();
 
+//        create broadcast list
         ArrayList<Socket> roomList = new ArrayList<>();
         for (String each : clientList.keySet()) {
-            if (clientList.get(each).getRoomID().equals(roomid) && !clientList.get(each).getClientID().equals(id)) {
+            if (!clientList.get(each).getClientID().equals(id)){
                 roomList.add(clientList.get(each).getSocket());
             }
         }
