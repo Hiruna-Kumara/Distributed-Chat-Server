@@ -1,6 +1,7 @@
 package server;
 
 import heartbeat.GossipJob;
+import heartbeat.ConsensusJob;
 
 import java.util.Scanner;
 import java.net.ServerSocket;
@@ -40,11 +41,11 @@ public class Main {
             //     startConsensus();
             // }
 
-            // if (true) {
-            //     System.out.println("INFO : Failure Detection is running GOSSIP mode");
-            //     startGossip();
-            //     startConsensus();
-            // }
+            if (true) {
+                System.out.println("INFO : Failure Detection is running GOSSIP mode");
+                startGossip();
+                startConsensus();
+            }
 
             while (true) {
                 Socket socket = serverSocket.accept();
@@ -59,54 +60,54 @@ public class Main {
         }
     }
 
-    // private static void startGossip() {
-    //     try {
+    private static void startGossip() {
+        try {
 
-    //         JobDetail gossipJob = JobBuilder.newJob(GossipJob.class)
-    //                 .withIdentity(Constant.GOSSIP_JOB, "group1").build();
+            JobDetail gossipJob = JobBuilder.newJob(GossipJob.class)
+                    .withIdentity("GOSSIPJOB", "group1").build();
 
-    //         gossipJob.getJobDataMap().put("aliveErrorFactor", alive_error_factor);
+            gossipJob.getJobDataMap().put("aliveErrorFactor", 5);
 
-    //         Trigger gossipTrigger = TriggerBuilder
-    //                 .newTrigger()
-    //                 .withIdentity(Constant.GOSSIP_JOB_TRIGGER, "group1")
-    //                 .withSchedule(
-    //                         SimpleScheduleBuilder.simpleSchedule()
-    //                                 .withIntervalInSeconds(alive_interval).repeatForever())
-    //                 .build();
+            Trigger gossipTrigger = TriggerBuilder
+                    .newTrigger()
+                    .withIdentity("GOSSIPJOBTRIGGER", "group1")
+                    .withSchedule(
+                            SimpleScheduleBuilder.simpleSchedule()
+                                    .withIntervalInSeconds(3).repeatForever())
+                    .build();
 
-    //         Scheduler scheduler = new StdSchedulerFactory().getScheduler();
-    //         scheduler.start();
-    //         scheduler.scheduleJob(gossipJob, gossipTrigger);
+            Scheduler scheduler = new StdSchedulerFactory().getScheduler();
+            scheduler.start();
+            scheduler.scheduleJob(gossipJob, gossipTrigger);
 
-    //     } catch (SchedulerException e) {
-    //         System.out.println("ERROR : Error in starting gossiping");
-    //     }
-    // }
+        } catch (SchedulerException e) {
+            System.out.println("ERROR : Error in starting gossiping");
+        }
+    }
 
-    // private static void startConsensus() {
-    //     try {
+    private static void startConsensus() {
+        try {
 
-    //         JobDetail consensusJob = JobBuilder.newJob(ConsensusJob.class)
-    //                 .withIdentity(Constant.CONSENSUS_JOB, "group1").build();
+            JobDetail consensusJob = JobBuilder.newJob(ConsensusJob.class)
+                    .withIdentity("CONSENSUSJOB", "group1").build();
 
-    //         consensusJob.getJobDataMap().put("consensusVoteDuration", consensus_vote_duration);
+            consensusJob.getJobDataMap().put("consensusVoteDuration", 5);
 
-    //         Trigger consensusTrigger = TriggerBuilder
-    //                 .newTrigger()
-    //                 .withIdentity(Constant.CONSENSUS_JOB_TRIGGER, "group1")
-    //                 .withSchedule(
-    //                         SimpleScheduleBuilder.simpleSchedule()
-    //                                 .withIntervalInSeconds(consensus_interval).repeatForever())
-    //                 .build();
+            Trigger consensusTrigger = TriggerBuilder
+                    .newTrigger()
+                    .withIdentity("CONSENSUSJOBTRIGGER", "group1")
+                    .withSchedule(
+                            SimpleScheduleBuilder.simpleSchedule()
+                                    .withIntervalInSeconds(10).repeatForever())
+                    .build();
 
-    //         Scheduler scheduler = new StdSchedulerFactory().getScheduler();
-    //         scheduler.start();
-    //         scheduler.scheduleJob(consensusJob, consensusTrigger);
+            Scheduler scheduler = new StdSchedulerFactory().getScheduler();
+            scheduler.start();
+            scheduler.scheduleJob(consensusJob, consensusTrigger);
 
-    //     } catch (SchedulerException e) {
-    //         System.out.println("ERROR : Error in starting consensus");
-    //     }
-    // }
+        } catch (SchedulerException e) {
+            System.out.println("ERROR : Error in starting consensus");
+        }
+    }
 
 }
