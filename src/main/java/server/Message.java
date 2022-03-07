@@ -69,4 +69,22 @@ public class Message {
         jsonObject.put("rooms", rooms);
         return jsonObject;
     }
+
+    @SuppressWarnings("unchecked")
+    public static JSONObject getDeleteRoom(String roomID, String isApproved) {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("type", "deleteroom");
+        jsonObject.put("roomid", roomID);
+        jsonObject.put("approved", isApproved);
+        return jsonObject;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static JSONObject getMessage(String id, String content) {
+        JSONObject join = new JSONObject();
+        join.put("type", "message");
+        join.put("identity", id);
+        join.put("content", content);
+        return join;
+    }
 }
