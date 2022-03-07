@@ -1,23 +1,27 @@
 package server;
 
+import java.net.Socket;
+
 public class ClientState {
 
-    private String id;
+    private String clientID;
     private String roomID;
     private Integer port;
+    private Socket socket;
 
-    public ClientState(String id, String roomID, Integer port){
-        this.id = id;
+    public ClientState(String clientID, String roomID, Integer port, Socket socket) {
+        this.clientID = clientID;
         this.roomID = roomID;
         this.port = port;
+        this.socket = socket;
     }
 
-    public String getId() {
-        return id;
+    public String getClientID() {
+        return clientID;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setClientID(String clientID) {
+        this.clientID = clientID;
     }
 
     public Integer getPort() {
@@ -36,11 +40,11 @@ public class ClientState {
         this.roomID = roomID;
     }
 
-    public String getIDbyPort(Integer port){
-        if (this.port==port){
-            return this.id;
-        } else {
-            return null;
-        }
+    public Socket getSocket() {
+        return socket;
+    }
+
+    public void setSocket(Socket socket) {
+        this.socket = socket;
     }
 }
