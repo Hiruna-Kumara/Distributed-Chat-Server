@@ -10,6 +10,7 @@ public class ServerState {
     private String serverAddress = null;
     private int coordinationPort;
     private int clientsPort;
+    private int serverIDNum;
 
     private Room mainHall;
     private final ArrayList<Server> clientHandlerList = new ArrayList<>();
@@ -47,6 +48,7 @@ public class ServerState {
                     this.serverAddress = params[1];
                     this.clientsPort = Integer.parseInt(params[2]);
                     this.coordinationPort = Integer.parseInt(params[3]);
+                    this.serverIDNum=Integer.parseInt(serverID.substring(1));
                 }
             }
             myReader.close();
@@ -74,6 +76,10 @@ public class ServerState {
 
     public String getServerID() {
         return serverID;
+    }
+
+    public int getServerIDNum() {
+        return serverIDNum;
     }
 
     public int getClientsPort() {

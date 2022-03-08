@@ -16,12 +16,12 @@ public class Server extends Thread {
 
     private final Socket clientSocket;
     private ClientState clientState;
-
+    private String serverID;
     // TODO : check input stream local var
     private DataOutputStream dataOutputStream;
 
     public Server(Socket clientSocket) {
-        String serverID = ServerState.getInstance().getServerID();
+        this.serverID = ServerState.getInstance().getServerID();
         ServerState.getInstance().getRoomMap().put("MainHall-" + serverID, ServerState.getInstance().getMainHall());
 
         this.clientSocket = clientSocket;
@@ -371,5 +371,13 @@ public class Server extends Thread {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public int getServerIDNum(){
+        return Integer.parseInt(serverID.substring(1));
+    }
+
+    public String getServerID(){
+        return this.serverID;
     }
 }
