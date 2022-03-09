@@ -20,30 +20,7 @@ public class Main {
 
         ServerState.getInstance().initializeWithConfigs(args[0], args[1]);
 
-        try {
-            ServerSocket serverSocket = new ServerSocket(ServerState.getInstance().getServerPort());
-            System.out.println(serverSocket.getInetAddress());
-            System.out.println(serverSocket.getLocalSocketAddress());
-            System.out.println(serverSocket.getLocalPort());
-            System.out.println("TCPServer Waiting for client on port 5000"); // client should use 5000 as port
-
-
-            /**
-             Heartbeat detection using gossiping
-             **/
-            // if (isGossip) {
-            //     System.out.println("INFO : Failure Detection is running GOSSIP mode");
-            //     Runnable gossip = new GossipJob();
-            //     new Thread(gossip).start();
-            //     startConsensus();
-            // }
-
-            if (true) {
-                System.out.println("INFO : Failure Detection is running GOSSIP mode");
-                startGossip();
-                startConsensus();
-            }
-
+        try {   
             // throw exception if invalid server id provided
             if (ServerState.getInstance().getServerAddress() == null) {
                 throw new IllegalArgumentException();
@@ -71,6 +48,13 @@ public class Main {
             System.out.println(serverClientsSocket.getLocalSocketAddress());
             System.out.println("LOG  : TCP Server waiting for clients on port " +
                     serverClientsSocket.getLocalPort()); // port open for clients
+
+            if (true) {
+                System.out.println("INFO : Failure Detection is running GOSSIP mode");
+                startGossip();
+                startConsensus();
+            }
+
             while (true) {
                 Socket clientSocket = serverClientsSocket.accept();
                 Server clientHandlerThread = new Server(clientSocket);
