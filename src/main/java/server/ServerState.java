@@ -7,13 +7,17 @@ import java.util.*;
 public class ServerState {
 
     private String serverID;
+    private int selfID;
     private String serverAddress = null;
     private int coordinationPort;
     private int clientsPort;
-    private int serverIDNum;
+    private int leaderID;
+    private int numberOfServersWithHigherIds;
+
+    private final HashMap<Integer, Server> servers = new HashMap<>(); // list of other servers
 
     private Room mainHall;
-    private final ArrayList<Server> clientHandlerList = new ArrayList<>();
+    private final ArrayList<ClientHandlerThread> clientHandlerThreadList = new ArrayList<>();
 
     private final HashMap<String, Room> roomMap = new HashMap<>(); // maintain room object list <roomID,roomObject>
 
@@ -35,9 +39,7 @@ public class ServerState {
     }
 
     public void initializeWithConfigs(String serverID, String serverConfPath) {
-
         this.serverID = serverID;
-
         try {
             File conf = new File(serverConfPath); // read configuration
             Scanner myReader = new Scanner(conf);
@@ -48,21 +50,31 @@ public class ServerState {
                     this.serverAddress = params[1];
                     this.clientsPort = Integer.parseInt(params[2]);
                     this.coordinationPort = Integer.parseInt(params[3]);
-                    this.serverIDNum=Integer.parseInt(serverID.substring(1));
+                    this.selfID = Integer.parseInt(params[0].substring(1, 2));
                 }
+                // add all servers to hash map
+                Server s = new Server(Integer.parseInt(params[0].substring(1, 2)),
+                        Integer.parseInt(params[3]),
+                        Integer.parseInt(params[2]),
+                        params[1]);
+                servers.put(s.getServerID(), s);
             }
             myReader.close();
+
         } catch (FileNotFoundException e) {
             System.out.println("Configs file not found");
             e.printStackTrace();
         }
+        // set number of servers with higher ids
+        numberOfServersWithHigherIds = servers.size() - selfID;
 
         this.mainHall = new Room("default-" + serverID, "MainHall-" + serverID);
         this.roomMap.put("MainHall-" + serverID, mainHall);
+
     }
 
-    public void addClientHandlerThreadToList(Server clientHandlerThread) {
-        clientHandlerList.add(clientHandlerThread);
+    public void addClientHandlerThreadToList(ClientHandlerThread clientHandlerThread) {
+        clientHandlerThreadList.add(clientHandlerThread);
     }
 
     public boolean isClientIDAlreadyTaken(String clientID) {
@@ -94,6 +106,26 @@ public class ServerState {
         return coordinationPort;
     }
 
+    public int getSelfID() {
+        return selfID;
+    }
+
+    public int getLeaderID() {
+        return leaderID;
+    }
+
+    public void setLeaderID(int leaderID) {
+        this.leaderID = leaderID;
+    }
+
+    public int getNumberOfServersWithHigherIds() {
+        return numberOfServersWithHigherIds;
+    }
+
+    public HashMap<Integer, Server> getServers() {
+        return servers;
+    }
+
     public Room getMainHall() {
         return mainHall;
     }
@@ -102,7 +134,7 @@ public class ServerState {
         return roomMap;
     }
 
-    public ArrayList<Server> getClientHandlerThreadList() {
-        return clientHandlerList;
+    public ArrayList<ClientHandlerThread> getClientHandlerThreadList() {
+        return clientHandlerThreadList;
     }
 }

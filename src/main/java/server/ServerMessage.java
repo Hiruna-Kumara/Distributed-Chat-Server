@@ -1,11 +1,11 @@
 package server;
 
 import org.json.simple.JSONObject;
+
 import java.util.*;
 
-public class Message {
+public class ServerMessage {
 
-    // {"type" : "newidentity", "identity" : "Adel"}
     @SuppressWarnings("unchecked")
     public static JSONObject getApprovalNewID(String approve) {
         JSONObject jsonObject = new JSONObject();
@@ -14,8 +14,6 @@ public class Message {
         return jsonObject;
     }
 
-    // {"type" : "roomchange", "identity" : "Adel", "former" : "", "roomid" :
-    // "MainHall-s1"}
     @SuppressWarnings("unchecked")
     public static JSONObject getJoinRoomOnCreate(String clientID, String MainHall) {
         return getJoinRoom(clientID, "", MainHall);
@@ -31,7 +29,6 @@ public class Message {
         return jsonObject;
     }
 
-    // {"type" : "createroom", "roomid" : "jokes"}
     @SuppressWarnings("unchecked")
     public static JSONObject getCreateRoom(String roomID, String approve) {
         JSONObject jsonObject = new JSONObject();
@@ -51,7 +48,6 @@ public class Message {
         return jsonObject;
     }
 
-    // {"type" : "who"}
     @SuppressWarnings("unchecked")
     public static JSONObject getWho(String roomID, List<String> participants, String id) {
         JSONObject jsonObject = new JSONObject();
@@ -86,5 +82,37 @@ public class Message {
         join.put("identity", id);
         join.put("content", content);
         return join;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static JSONObject getHeartbeat(String sender) {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("option", "heartbeat");
+        jsonObject.put("sender", sender);
+        return jsonObject;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static JSONObject getElection(String source) {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("option", "election");
+        jsonObject.put("source", source);
+        return jsonObject;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static JSONObject getCoordinator(String leader) {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("option", "coordinator");
+        jsonObject.put("leader", leader);
+        return jsonObject;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static JSONObject getOk(String sender) {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("option", "ok");
+        jsonObject.put("sender", sender);
+        return jsonObject;
     }
 }
