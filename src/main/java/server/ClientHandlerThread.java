@@ -270,16 +270,18 @@ public class ClientHandlerThread extends Thread {
         if (ServerState.getInstance().getRoomMap().containsKey(roomID)) {
             //TODO : check sync
             Room room = ServerState.getInstance().getRoomMap().get(roomID);
+
+            //create broadcast list
+            HashMap<String,ClientState> formerClientList = ServerState.getInstance().getRoomMap().get(roomID).getClientStateMap();
+            HashMap<String,ClientState> mainHallClientList = ServerState.getInstance().getRoomMap().get(mainHallRoomID).getClientStateMap();
+            mainHallClientList.putAll(formerClientList);
+
+            ArrayList<Socket> socketList = new ArrayList<>();
+            for (String each:mainHallClientList.keySet()){
+                socketList.add(mainHallClientList.get(each).getSocket());
+            }
+
             if (room.getOwnerIdentity().equals(clientState.getClientID())) {
-
-                HashMap<String,ClientState> formerClientList = ServerState.getInstance().getRoomMap().get(roomID).getClientStateMap();
-                HashMap<String,ClientState> mainHallClientList = ServerState.getInstance().getRoomMap().get(mainHallRoomID).getClientStateMap();
-                mainHallClientList.putAll(formerClientList);
-
-                ArrayList<Socket> socketList = new ArrayList<>();
-                for (String each:mainHallClientList.keySet()){
-                    socketList.add(mainHallClientList.get(each).getSocket());
-                }
 
                 ServerState.getInstance().getRoomMap().remove(roomID);
 
@@ -294,13 +296,13 @@ public class ClientHandlerThread extends Thread {
                     }
                 }
 
-                messageSend(null, "deleteroom " + " " + " true", null);
+                messageSend(null, "deleteroom " + roomID + " true", null);
 
                 System.out.println("INFO : "+ clientState.getClientID()+ " is quit");
 
             } else {
                 ServerState.getInstance().getRoomMap().get(roomID).removeParticipants(clientState);
-                messageSend(null, "deleteroom " + " " + " true", null);
+                messageSend(socketList, "roomchangeall " + clientState.getClientID() + " " + " " + " " + mainHallRoomID, null);
                 System.out.println("INFO : "+ clientState.getClientID()+ " is quit");
             }
 
