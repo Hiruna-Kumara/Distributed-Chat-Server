@@ -90,10 +90,6 @@ public class ServerState {
         return serverID;
     }
 
-    public int getServerIDNum() {
-        return serverIDNum;
-    }
-
     public int getClientsPort() {
         return clientsPort;
     }
