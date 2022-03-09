@@ -273,11 +273,25 @@ public class ClientHandlerThread extends Thread {
                 messageSend(null, "deleteroom " + roomID + " true", null);
 
                 System.out.println("INFO : "+ clientState.getClientID()+ " is quit");
+                try {
+                    if(clientSocket.isClosed()) {
+                        clientSocket.close();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
 
             } else {
                 ServerState.getInstance().getRoomMap().get(roomID).removeParticipants(clientState);
                 messageSend(socketList, "roomchangeall " + clientState.getClientID() + " " + " " + " " + mainHallRoomID, null);
                 System.out.println("INFO : "+ clientState.getClientID()+ " is quit");
+                try {
+                    if(clientSocket.isClosed()) {
+                        clientSocket.close();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
 
             //TODO : check global, room change all members
