@@ -1,6 +1,8 @@
 package server;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class Room {
     private final String ownerID;
