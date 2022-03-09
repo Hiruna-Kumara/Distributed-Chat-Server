@@ -63,7 +63,7 @@ public class ClientHandlerThread extends Thread {
             send(sendToClient);
         } else if (array[0].equals("roomchange")) {
             sendToClient = ServerMessage.getJoinRoom(array[1], array[2].replace("_", ""), array[3]);
-            send(sendToClient);
+            sendBroadcast(sendToClient, socketList);
         } else if (array[0].equals("createroom")) {
             sendToClient = ServerMessage.getCreateRoom(array[1], array[2]);
             send(sendToClient);
@@ -95,10 +95,18 @@ public class ClientHandlerThread extends Thread {
                     connected.getPort(), connected);
             ServerState.getInstance().getMainHall().addParticipants(clientState);
 
+            //create broadcast list
+            String mainHallRoomID = ServerState.getInstance().getMainHall().getRoomID();
+            HashMap<String,ClientState> mainHallClientList = ServerState.getInstance().getRoomMap().get(mainHallRoomID).getClientStateMap();
+
+            ArrayList<Socket> socketList = new ArrayList<>();
+            for (String each:mainHallClientList.keySet()){
+                socketList.add(mainHallClientList.get(each).getSocket());
+            }
+
             synchronized (connected) {
                 messageSend(null, "newid true", null);
-                messageSend(null,
-                        "roomchange " + clientID + " _" + " MainHall-" + ServerState.getInstance().getServerID(), null);
+                messageSend(socketList, "roomchange " + clientID + " _" + " MainHall-" + ServerState.getInstance().getServerID(), null);
             }
         } else {
             System.out.println("WARN : Recieved wrong ID type or ID already in use");
