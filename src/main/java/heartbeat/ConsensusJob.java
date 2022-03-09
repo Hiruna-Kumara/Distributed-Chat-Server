@@ -1,4 +1,4 @@
-package heartbeat;
+/*package heartbeat;
 
 import consensus.LeaderState;
 import messaging.MessageTransfer;
@@ -179,3 +179,6 @@ public class ConsensusJob implements Job {
     }
 
 }
+
+
+*/

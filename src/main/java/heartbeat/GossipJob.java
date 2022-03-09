@@ -1,3 +1,5 @@
+/*
+
 package heartbeat;
 
 import consensus.BullyAlgorithm;
@@ -244,3 +246,4 @@ public class GossipJob implements Job{
     }
 }
 
+*/
