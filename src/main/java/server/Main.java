@@ -76,7 +76,6 @@ public class Main {
             while (true) {
                 Socket clientSocket = serverClientsSocket.accept();
                 ClientHandlerThread clientHandlerThread = new ClientHandlerThread(clientSocket);
-                clientHandlerThread.setThreadID(clientHandlerThread.getId());
                 // starting the thread
                 ServerState.getInstance().addClientHandlerThreadToMap( clientHandlerThread );
                 clientHandlerThread.start();

@@ -1,6 +1,7 @@
 package consensus;
 
 import server.ServerState;
+import server.Room;
 
 import java.util.HashMap;
 
@@ -8,8 +9,8 @@ public class LeaderState
 {
     private int leaderID;
     private final HashMap<String, Integer> activeClients = new HashMap<>(); // <clientID, serverID>
-    private final HashMap<String, String> activeClientRooms = new HashMap<>(); // <clientID, roomID>
-    private final HashMap<String, Integer> activeServerRooms = new HashMap<>(); // <roomID, serverID>
+    private final HashMap<String, Room> activeChatRooms = new HashMap<>(); // <roomID, room obj>
+
 
     // singleton
     private static LeaderState leaderStateInstance;
@@ -49,21 +50,18 @@ public class LeaderState
     public void removeApprovedClient(String clientID) {
         activeClients.remove( clientID );
     }
-    public boolean isRoomCreationApproved( String clientID, String roomID ) {
-        return !(activeServerRooms.containsKey( roomID ) || activeClientRooms.containsKey( clientID ));
+    public boolean isRoomCreationApproved( String roomID ) {
+        return !(activeChatRooms.containsKey( roomID ));
 
     }
 
     public void addApprovedRoom(String clientID, String roomID, int serverID) {
-        activeClientRooms.put( clientID, roomID );
-        activeServerRooms.put( roomID, serverID );
+        Room room = new Room( clientID, roomID, serverID );
+        activeChatRooms.put( roomID, room );
     }
 
-    public void removeApprovedRoom(String clientID, String roomID) {
-        if( activeClientRooms.get( clientID ).equals( roomID ) ) {
-            activeClientRooms.remove( clientID );
-            activeServerRooms.remove( roomID );
-        }
+    public void removeApprovedRoom(String roomID) {
+        activeChatRooms.remove( roomID );
     }
 
 

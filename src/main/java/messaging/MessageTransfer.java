@@ -35,7 +35,9 @@ public class MessageTransfer {
 
     //check validity of the ID
     public static boolean checkID(String id) {
-        return (Character.toString(id.charAt(0)).matches("[a-zA-Z]+") && id.matches("[a-zA-Z0-9]+") && id.length() >= 3 && id.length() <= 16);
+        return (Character.toString(id.charAt(0)).matches("[a-zA-Z]+")
+                && id.matches("[a-zA-Z0-9]+") && id.length() >= 3 && id.length() <= 16);
+
     }
 
     //send broadcast message

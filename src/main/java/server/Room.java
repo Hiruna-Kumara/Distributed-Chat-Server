@@ -7,13 +7,15 @@ import java.util.HashMap;
 public class Room {
     private final String ownerID;
     private final String roomID;
+    private final int serverID;
 
     private final HashMap<String,ClientState> clientStateMap = new HashMap<>(); // <clientID,clientState>
 
     // TODO : check sync keyword
-    public Room(String identity, String roomID) {
+    public Room(String identity, String roomID, int serverID) {
         this.ownerID = identity;
         this.roomID = roomID;
+        this.serverID = serverID;
     }
 
     public synchronized String getRoomID() {
