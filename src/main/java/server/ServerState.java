@@ -18,7 +18,10 @@ public class ServerState {
     private final HashMap<Integer, Server> servers = new HashMap<>(); // list of other servers
 
     private Room mainHall;
-    private final ArrayList<ClientHandlerThread> clientHandlerThreadList = new ArrayList<>();
+
+    // maintain client handler thread map <threadID, thread>
+    private final HashMap<Long, ClientHandlerThread> clientHandlerThreadMap = new HashMap<>();
+
 
     private final HashMap<String, Room> roomMap = new HashMap<>(); // maintain room object list <roomID,roomObject>
 
@@ -74,8 +77,12 @@ public class ServerState {
 
     }
 
-    public void addClientHandlerThreadToList(ClientHandlerThread clientHandlerThread) {
-        clientHandlerThreadList.add(clientHandlerThread);
+        public void addClientHandlerThreadToMap(ClientHandlerThread clientHandlerThread) {
+        clientHandlerThreadMap.put( clientHandlerThread.getId(), clientHandlerThread );
+    }
+
+    public ClientHandlerThread getClientHandlerThread(Long threadID) {
+        return clientHandlerThreadMap.get( threadID );
     }
 
     public boolean isClientIDAlreadyTaken(String clientID) {
@@ -123,7 +130,4 @@ public class ServerState {
         return roomMap;
     }
 
-    public ArrayList<ClientHandlerThread> getClientHandlerThreadList() {
-        return clientHandlerThreadList;
-    }
 }

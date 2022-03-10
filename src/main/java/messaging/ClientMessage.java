@@ -1,10 +1,10 @@
-package server;
+package messaging;
 
 import org.json.simple.JSONObject;
 
 import java.util.*;
 
-public class ServerMessage {
+public class ClientMessage {
 
     @SuppressWarnings("unchecked")
     public static JSONObject getApprovalNewID(String approve) {
@@ -84,35 +84,25 @@ public class ServerMessage {
         return join;
     }
 
+
     @SuppressWarnings("unchecked")
-    public static JSONObject getHeartbeat(String sender) {
+    public static JSONObject getClientIdApprovalRequest(String clientID, String sender, String threadID) {
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("option", "heartbeat");
+        jsonObject.put("type", "clientidapprovalrequest");
+        jsonObject.put("clientid", clientID);
         jsonObject.put("sender", sender);
+        jsonObject.put("threadid", threadID);
         return jsonObject;
     }
 
     @SuppressWarnings("unchecked")
-    public static JSONObject getElection(String source) {
+    public static JSONObject getClientIdApprovalReply(String clientID, String approved, String threadID) {
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("option", "election");
-        jsonObject.put("source", source);
+        jsonObject.put("type", "clientidapprovalreply");
+        jsonObject.put("clientid", clientID);
+        jsonObject.put("approved", approved);
+        jsonObject.put("threadid", threadID);
         return jsonObject;
     }
 
-    @SuppressWarnings("unchecked")
-    public static JSONObject getCoordinator(String leader) {
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("option", "coordinator");
-        jsonObject.put("leader", leader);
-        return jsonObject;
-    }
-
-    @SuppressWarnings("unchecked")
-    public static JSONObject getOk(String sender) {
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("option", "ok");
-        jsonObject.put("sender", sender);
-        return jsonObject;
-    }
 }

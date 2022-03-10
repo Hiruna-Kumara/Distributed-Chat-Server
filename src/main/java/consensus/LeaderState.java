@@ -3,15 +3,15 @@ package consensus;
 import server.ServerState;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 public class LeaderState
 {
     private int leaderID;
-    private final HashMap<String, String> pendingClients = new HashMap<>(); // <clientID, serverID>
-    private final HashMap<String, String> activeClients = new HashMap<>();
-    private final HashMap<String, String> pendingRooms = new HashMap<>();
+    private final HashMap<String, Integer> activeClients = new HashMap<>(); // <clientID, serverID>
+    private final HashMap<String, String> pendingRooms = new HashMap<>(); // clientID, roomID, serverID
     private final HashMap<String, String> activeRooms = new HashMap<>();
-
     // singleton
     private static LeaderState leaderStateInstance;
 
@@ -29,17 +29,26 @@ public class LeaderState
         return leaderStateInstance;
     }
 
-    public static boolean isLeader() {
-        return BullyAlgorithm.leaderFlag &&
-                ( ServerState.getInstance().getSelfID() == LeaderState.getInstance().getLeaderID() );
+    public boolean isLeader() {
+        return ServerState.getInstance().getSelfID() == LeaderState.getInstance().getLeaderID();
     }
 
+    public boolean isLeaderElected() {
+        return BullyAlgorithm.leaderFlag;
+    }
+
+
+
     public boolean isClientIDAlreadyTaken(String clientID){
-        for ( String key: pendingClients.keySet()) {
-            if (key.equals( clientID ))
-                return true;
-        }
-        return false;
+        return activeClients.containsKey( clientID );
+    }
+
+    public void addApprovedClient(String clientID, int serverID) {
+        activeClients.put( clientID, serverID );
+    }
+
+    public void removeApprovedClient(String clientID) {
+        activeClients.remove( clientID );
     }
 
     public int getLeaderID()

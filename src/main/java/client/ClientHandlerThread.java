@@ -4,8 +4,12 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import server.Room;
-import server.ServerMessage;
+import messaging.ClientMessage;
+import messaging.MessageTransfer;
+import messaging.ServerMessage;
+//import messaging.MessageTransfer;
 import server.ServerState;
+import consensus.LeaderState;
 
 import java.io.*;
 import java.net.Socket;
@@ -21,7 +25,8 @@ public class ClientHandlerThread extends Thread {
 
     private final Socket clientSocket;
     private ClientState clientState;
-
+    private Long threadID;
+    private int approved = -1;
 
     public ClientHandlerThread(Socket clientSocket) {
         String serverID = ServerState.getInstance().getServerID();
@@ -30,66 +35,107 @@ public class ClientHandlerThread extends Thread {
         this.clientSocket = clientSocket;
     }
 
+    public void setThreadID(Long threadID) {
+        this.threadID = threadID;
+    }
+
+    public void setApproved(int approved) {
+        this.approved = approved;
+    }
 
     // format message before sending it to client
     private void messageSend(ArrayList<Socket> socketList, String msg, List<String> msgList) throws IOException {
         JSONObject sendToClient = new JSONObject();
         String[] array = msg.split(" ");
         if (array[0].equals("newid")) {
-            sendToClient = ServerMessage.getApprovalNewID(array[1]);
-            sendClient(sendToClient,clientSocket);
+            sendToClient = ClientMessage.getApprovalNewID(array[1]);
+            sendClient(sendToClient, clientSocket);
         } else if (array[0].equals("roomchange")) {
-            sendToClient = ServerMessage.getJoinRoom(array[1], array[2].replace("_", ""), array[3]);
+            sendToClient = ClientMessage.getJoinRoom(array[1], array[2].replace("_", ""), array[3]);
             sendBroadcast(sendToClient, socketList);
         } else if (array[0].equals("createroom")) {
-            sendToClient = ServerMessage.getCreateRoom(array[1], array[2]);
-            sendClient(sendToClient,clientSocket);
+            sendToClient = ClientMessage.getCreateRoom(array[1], array[2]);
+            sendClient(sendToClient, clientSocket);
         } else if (array[0].equals("roomchangeall")) {
-            sendToClient = ServerMessage.getCreateRoomChange(array[1], array[2], array[3]);
+            sendToClient = ClientMessage.getCreateRoomChange(array[1], array[2], array[3]);
             sendBroadcast(sendToClient, socketList);
         } else if (array[0].equals("roomcontents")) {
-            sendToClient = ServerMessage.getWho(array[1], msgList, array[2]);
-            sendClient(sendToClient,clientSocket);
+            sendToClient = ClientMessage.getWho(array[1], msgList, array[2]);
+            sendClient(sendToClient, clientSocket);
         } else if (array[0].equals("roomlist")) {
-            sendToClient = ServerMessage.getList(msgList);
-            sendClient(sendToClient,clientSocket);
+            sendToClient = ClientMessage.getList(msgList);
+            sendClient(sendToClient, clientSocket);
         } else if (array[0].equals("deleteroom")) {
-            sendToClient = ServerMessage.getDeleteRoom(array[1], array[2]);
-            sendClient(sendToClient,clientSocket);
+            sendToClient = ClientMessage.getDeleteRoom(array[1], array[2]);
+            sendClient(sendToClient, clientSocket);
         } else if (array[0].equals("message")) {
-            sendToClient = ServerMessage.getMessage(array[1],
+            sendToClient = ClientMessage.getMessage(array[1],
                     String.join(" ", Arrays.copyOfRange(array, 2, array.length)));
             sendBroadcast(sendToClient, socketList);
         }
     }
 
-    // new identity
-    private void newID(String clientID, Socket connected, String jsonStringFromClient) throws IOException {
-        if (checkID(clientID) && !ServerState.getInstance().isClientIDAlreadyTaken(clientID)) {
-            System.out.println("INFO : Received correct ID ::" + jsonStringFromClient);
 
-            this.clientState = new ClientState(clientID, ServerState.getInstance().getMainHall().getRoomID(),
-                    connected.getPort(), connected);
-            ServerState.getInstance().getMainHall().addParticipants(clientState);
-
-            //create broadcast list
-            String mainHallRoomID = ServerState.getInstance().getMainHall().getRoomID();
-            HashMap<String,ClientState> mainHallClientList = ServerState.getInstance().getRoomMap().get(mainHallRoomID).getClientStateMap();
-
-            ArrayList<Socket> socketList = new ArrayList<>();
-            for (String each:mainHallClientList.keySet()){
-                socketList.add(mainHallClientList.get(each).getSocket());
+    //new identity
+    private void newID(String clientID, Socket connected, String jsonStringFromClient) throws IOException, InterruptedException {
+        if (checkID(clientID)) {
+            // busy wait until leader is elected
+            while (!LeaderState.getInstance().isLeaderElected()) {
+                Thread.sleep(1000);
             }
+            while (approved == -1) {
+                // if self is leader get direct approval
+                if (LeaderState.getInstance().isLeader()) {
+                    approved = LeaderState.getInstance().isClientIDAlreadyTaken(clientID) ? 0 : 1;
+                } else {
+                    try {
+                        // send client id approval request to leader
+                        MessageTransfer.sendToLeader(
+                                ServerMessage.getClientIdApprovalRequest(clientID,
+                                        String.valueOf(ServerState.getInstance().getSelfID()),
+                                        String.valueOf(threadID)
+                                )
+                        );
 
-            synchronized (connected) {
-                messageSend(null, "newid true", null);
-                messageSend(socketList, "roomchange " + clientID + " _" + " MainHall-" + ServerState.getInstance().getServerID(), null);
+                        System.out.println("INFO : Client ID '" + clientID + "' sent to leader for approval");
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    Thread.sleep(7000);
+                }
+            }
+            if (approved == 1) {
+                System.out.println("INFO : Received correct ID ::" + jsonStringFromClient);
+                this.clientState = new ClientState(clientID, ServerState.getInstance().getMainHall().getRoomID(),
+                        connected.getPort(), connected);
+                ServerState.getInstance().getMainHall().addParticipants(clientState);
+
+                //create broadcast list
+                String mainHallRoomID = ServerState.getInstance().getMainHall().getRoomID();
+                HashMap<String, ClientState> mainHallClientList = ServerState.getInstance()
+                        .getRoomMap()
+                        .get(mainHallRoomID)
+                        .getClientStateMap();
+                ArrayList<Socket> socketList = new ArrayList<>();
+                for (String each : mainHallClientList.keySet()) {
+                    socketList.add(mainHallClientList.get(each).getSocket());
+                }
+
+                synchronized (connected) {
+                    messageSend(null, "newid true", null);
+                    messageSend(socketList, "roomchange " + clientID + " _" + " MainHall-" + ServerState.getInstance().getServerID(), null);
+                }
+            } else if (approved == 0) {
+                System.out.println("WARN : ID already in use");
+                // TODO: if client id is not approved throws error
+                messageSend(null, "newid false", null);
             }
         } else {
-            System.out.println("WARN : Recieved wrong ID type or ID already in use");
+            System.out.println("WARN : Recieved wrong ID type");
             messageSend(null, "newid false", null);
         }
     }
+
 
     // list
     private void list(Socket connected, String jsonStringFromClient) throws IOException {
@@ -165,7 +211,7 @@ public class ClientHandlerThread extends Thread {
                     .getClientStateMap();
             HashMap<String, ClientState> clientListOld = ServerState.getInstance().getRoomMap().get(formerRoomId)
                     .getClientStateMap();
-            HashMap<String,ClientState>  clientList = new HashMap<>();
+            HashMap<String, ClientState> clientList = new HashMap<>();
             clientList.putAll(clientListOld);
             clientList.putAll(clientListNew);
 
@@ -239,7 +285,7 @@ public class ClientHandlerThread extends Thread {
     }
 
     //    quit
-    private void quit(Socket connected,String jsonStringFromClient) throws IOException {
+    private void quit(Socket connected, String jsonStringFromClient) throws IOException {
 
         String roomID = clientState.getRoomID();
         String mainHallRoomID = ServerState.getInstance().getMainHall().getRoomID();
@@ -249,12 +295,12 @@ public class ClientHandlerThread extends Thread {
             Room room = ServerState.getInstance().getRoomMap().get(roomID);
 
             //create broadcast list
-            HashMap<String,ClientState> formerClientList = ServerState.getInstance().getRoomMap().get(roomID).getClientStateMap();
-            HashMap<String,ClientState> mainHallClientList = ServerState.getInstance().getRoomMap().get(mainHallRoomID).getClientStateMap();
+            HashMap<String, ClientState> formerClientList = ServerState.getInstance().getRoomMap().get(roomID).getClientStateMap();
+            HashMap<String, ClientState> mainHallClientList = ServerState.getInstance().getRoomMap().get(mainHallRoomID).getClientStateMap();
             mainHallClientList.putAll(formerClientList);
 
             ArrayList<Socket> socketList = new ArrayList<>();
-            for (String each:mainHallClientList.keySet()){
+            for (String each : mainHallClientList.keySet()) {
                 socketList.add(mainHallClientList.get(each).getSocket());
             }
 
@@ -262,11 +308,11 @@ public class ClientHandlerThread extends Thread {
 
                 ServerState.getInstance().getRoomMap().remove(roomID);
 
-                for(String client:formerClientList.keySet()){
+                for (String client : formerClientList.keySet()) {
                     String id = formerClientList.get(client).getClientID();
-                    if (clientState.getClientID().equals(client)){
+                    if (clientState.getClientID().equals(client)) {
                         messageSend(socketList, "roomchangeall " + id + " " + " " + " " + mainHallRoomID, null);
-                    } else{
+                    } else {
                         formerClientList.get(client).setRoomID(mainHallRoomID);
                         ServerState.getInstance().getRoomMap().get(mainHallRoomID).addParticipants(formerClientList.get(client));
                         messageSend(socketList, "roomchangeall " + id + " " + roomID + " " + mainHallRoomID, null);
@@ -275,9 +321,9 @@ public class ClientHandlerThread extends Thread {
 
                 messageSend(null, "deleteroom " + roomID + " true", null);
 
-                System.out.println("INFO : "+ clientState.getClientID()+ " is quit");
+                System.out.println("INFO : " + clientState.getClientID() + " is quit");
                 try {
-                    if(clientSocket.isClosed()) {
+                    if (clientSocket.isClosed()) {
                         clientSocket.close();
                     }
                 } catch (Exception e) {
@@ -287,9 +333,9 @@ public class ClientHandlerThread extends Thread {
             } else {
                 ServerState.getInstance().getRoomMap().get(roomID).removeParticipants(clientState);
                 messageSend(socketList, "roomchangeall " + clientState.getClientID() + " " + " " + " " + mainHallRoomID, null);
-                System.out.println("INFO : "+ clientState.getClientID()+ " is quit");
+                System.out.println("INFO : " + clientState.getClientID() + " is quit");
                 try {
-                    if(clientSocket.isClosed()) {
+                    if (clientSocket.isClosed()) {
                         clientSocket.close();
                     }
                 } catch (Exception e) {
@@ -368,20 +414,25 @@ public class ClientHandlerThread extends Thread {
                         if (j_object.get("type").equals("joinroom")) {
                             String roomID = j_object.get("roomid").toString();
                             joinRoom(roomID, clientSocket, jsonStringFromClient);
-                        } if (j_object.get("type").equals("deleteroom")) {
+                        }
+                        if (j_object.get("type").equals("deleteroom")) {
                             String roomID = j_object.get("roomid").toString();
                             deleteRoom(roomID, clientSocket, jsonStringFromClient);
-                        } if (j_object.get("type").equals("message")) {
+                        }
+                        if (j_object.get("type").equals("message")) {
                             String content = j_object.get("content").toString();
                             message(content, clientSocket, jsonStringFromClient);
-                        } if (j_object.get("type").equals("quit")) {
-                            quit(clientSocket,jsonStringFromClient);
+                        }
+                        if (j_object.get("type").equals("quit")) {
+                            quit(clientSocket, jsonStringFromClient);
                         }
                     } else {
                         System.out.println("WARN : Command error, Corrupted JSON");
                     }
 
                 } catch (ParseException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }
