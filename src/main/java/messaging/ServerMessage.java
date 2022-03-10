@@ -55,6 +55,8 @@ public class ServerMessage
         jsonObject.put("threadid", threadID);
         return jsonObject;
     }
+
+    @SuppressWarnings("unchecked")
     public static JSONObject getRoomCreateApprovalRequest(String clientID, String roomID, String sender, String threadID) {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("type", "roomcreateapprovalrequest");
@@ -65,6 +67,7 @@ public class ServerMessage
         return jsonObject;
     }
 
+    @SuppressWarnings("unchecked")
     public static JSONObject getRoomCreateApprovalReply(String approved, String threadID) {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("type", "roomcreateapprovalreply");

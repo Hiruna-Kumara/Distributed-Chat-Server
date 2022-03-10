@@ -60,7 +60,7 @@ public class ServerHandlerThread extends Thread {
                                     ServerMessage.getClientIdApprovalReply(String.valueOf(approved), threadID),
                                     destServer
                             );
-                            System.out.println("INFO : Client ID '" + clientID + "' from s" + sender + " is " + (approved ? "" : "not") + " approved");
+                            System.out.println("INFO : Client ID '" + clientID +"' from s" + sender + " is" + (approved ? " ":" not ") + "approved");
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -74,7 +74,10 @@ public class ServerHandlerThread extends Thread {
                         ClientHandlerThread clientHandlerThread = ServerState.getInstance()
                                 .getClientHandlerThread( threadID );
                         clientHandlerThread.setApprovedClientID( approved );
-
+                        Object lock = clientHandlerThread.getLock();
+                        synchronized( lock ) {
+                            lock.notify();
+                        }
                     } else if ( j_object.get("type").equals("roomcreateapprovalrequest") ) {
 
                         // leader processes room create approval request received
@@ -98,7 +101,7 @@ public class ServerHandlerThread extends Thread {
                             );
                             System.out.println("INFO : Room '"+ roomID +
                                     "' creation request from client " + clientID +
-                                    " is " + (approved ? "":"not") + " approved");
+                                    " is" + (approved ? " ":" not ") + "approved");
                         }
                         catch(Exception e) {
                             e.printStackTrace();
@@ -115,7 +118,10 @@ public class ServerHandlerThread extends Thread {
                         ClientHandlerThread clientHandlerThread = ServerState.getInstance()
                                 .getClientHandlerThread(threadID);
                         clientHandlerThread.setApprovedRoomCreation( approved );
-
+                        Object lock = clientHandlerThread.getLock();
+                        synchronized( lock ) {
+                            lock.notify();
+                        }
                     } else {
                         System.out.println("WARN : Command error, Corrupted JSON from Server");
                     }

@@ -56,7 +56,9 @@ public class Main {
             /**
              Handle coordination
              **/
-            ServerHandlerThread serverHandlerThread = new ServerHandlerThread(serverCoordinationSocket);
+            ServerHandlerThread serverHandlerThread = new ServerHandlerThread( serverCoordinationSocket );
+
+
             // starting the thread
             serverHandlerThread.start();
 

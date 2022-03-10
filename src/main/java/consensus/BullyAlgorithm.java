@@ -3,17 +3,9 @@ package consensus;
 import messaging.MessageTransfer;
 import org.json.simple.JSONObject;
 import server.Server;
-import messaging.ClientMessage;
 import server.ServerState;
 import messaging.ServerMessage;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.InetSocketAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.SocketAddress;
-import java.nio.charset.StandardCharsets;
 
 public class BullyAlgorithm implements Runnable {
     String operation;
