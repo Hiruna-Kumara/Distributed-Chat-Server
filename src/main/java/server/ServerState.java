@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ServerState {
 
@@ -15,6 +16,7 @@ public class ServerState {
     private int leaderID;
     private int numberOfServersWithHigherIds;
 
+    private AtomicBoolean ongoingConsensus = new AtomicBoolean(false);
     private final ConcurrentHashMap<Integer, String> suspectList = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<Integer, Integer> heartbeatCountList = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, Integer> voteSet = new ConcurrentHashMap<>();
@@ -150,8 +152,16 @@ public class ServerState {
     public synchronized void removeServerInSuspectList(Integer serverId) {
         suspectList.remove(serverId);
     }
-    
+
     public ConcurrentHashMap<Integer, String> getSuspectList() {
         return suspectList;
+    }
+
+    public AtomicBoolean onGoingConsensus() {
+        return ongoingConsensus;
+    }
+
+    public ConcurrentHashMap<String, Integer> getVoteSet() {
+        return voteSet;
     }
 }

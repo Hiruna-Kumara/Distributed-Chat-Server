@@ -19,14 +19,14 @@ public class ConsensusJob implements Job {
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
         if (!serverState.onGoingConsensus().get()) {
-            // This is a leader based Consensus.
-            // If no leader elected at the moment then no consensus task to perform.
+            // This is a leader based Consensus. If no leader elected at the moment then no consensus task to perform.
             if (leaderState.isLeaderElected()) {
                 serverState.onGoingConsensus().set(true);
                 performConsensus(context); // critical region
                 serverState.onGoingConsensus().set(false);
             }
-        } else {
+        } 
+        else {
             System.out.println("[SKIP] There seems to be on going consensus at the moment, skip.");
         }
     }
@@ -44,7 +44,7 @@ public class ConsensusJob implements Job {
         Integer leaderServerId = leaderState.getLeaderID();
         Integer myServerId = serverState.getSelfID();
 
-        // if I am leader, and suspect someone, I want to start voting to KICK him!
+        // if I am leader, and suspect someone, start for voting
         if (myServerId.equals(leaderServerId)) {
 
             // find the next suspect to vote and break the loop
@@ -62,23 +62,25 @@ public class ConsensusJob implements Job {
                 }
             }
 
-            //got a suspect
+            //find suspect servers
             if (suspectServerId != null) {
 
-                serverState.getVoteSet().put("YES", 1); // I suspect it already, so I vote yes.
+                serverState.getVoteSet().put("YES", 1); // vote "YES" for suspect one.
                 JSONObject startVoteMessage = new JSONObject();
                 startVoteMessage = serverMessage.startVoteMessage(serverState.getSelfID(), suspectServerId);
                 try {
                     MessageTransfer.sendServerBroadcast(startVoteMessage, serverList);
                     System.out.println("INFO : Leader calling for vote to kick suspect-server: " + startVoteMessage);
-                } catch (Exception e) {
+                } 
+                catch (Exception e) {
                     System.out.println("WARN : Leader calling for vote to kick suspect-server is failed");
                 }
 
                 //wait for consensus vote duration period
                 try {
                     Thread.sleep(Integer.parseInt(consensusVoteDuration) * 1000);
-                } catch (InterruptedException e) {
+                } 
+                catch (InterruptedException e) {
                     e.printStackTrace();
                 }
 
@@ -92,7 +94,6 @@ public class ConsensusJob implements Job {
 
                         MessageTransfer.sendServerBroadcast(notifyServerDownMessage, serverList);
                         System.out.println("INFO : Notify server " + suspectServerId + " down. Removing...");
-//                        serverState.removeServer(suspectServerId);
                         leaderState.removeRemoteChatRoomsClientsByServerId(suspectServerId);
                         serverState.removeServerInCountList(suspectServerId);
                         serverState.removeServerInSuspectList(suspectServerId);
@@ -124,55 +125,52 @@ public class ConsensusJob implements Job {
                 try {
                     MessageTransfer.sendServer(answerVoteMessage, serverState.getServers().get(LeaderState.getInstance().getLeaderID()));
                     System.out.println(String.format("INFO : Voting on suspected server: [%s] vote: YES", suspectServerId));
-                } catch (Exception e) {
+                } 
+                catch (Exception e) {
                     System.out.println("ERROR : Voting on suspected server is failed");
                 }
+            }
 
-            } else {
-
+            else {
                 JSONObject answerVoteMessage = new JSONObject();
                 answerVoteMessage = serverMessage.answerVoteMessage(suspectServerId, "NO", mySeverId);
                 try {
                     MessageTransfer.sendServer(answerVoteMessage, serverState.getServers().get(LeaderState.getInstance().getLeaderID()));
                     System.out.println(String.format("INFO : Voting on suspected server: [%s] vote: NO", suspectServerId));
-                } catch (Exception e) {
+                } 
+                catch (Exception e) {
                     System.out.println("ERROR : Voting on suspected server is failed");
                 }
             }
         }
-
     }
 
-    public static void answerVoteHandler(JSONObject j_object){
+    public static void answerVoteHandler(JSONObject j_object) {
 
         ServerState serverState = ServerState.getInstance();
-
         Integer suspectServerId = (int) (long)j_object.get("suspectServerId");
         String vote = (String) j_object.get("vote");
         Integer votedBy = (int) (long)j_object.get("votedBy");
-
         Integer voteCount = serverState.getVoteSet().get(vote);
 
         System.out.println(String.format("Receiving voting to kick [%s]: [%s] voted by server: [%s]", suspectServerId, vote, votedBy));
 
         if (voteCount == null) {
             serverState.getVoteSet().put(vote, 1);
-        } else {
+        } 
+        else {
             serverState.getVoteSet().put(vote, voteCount + 1);
         }
-
     }
 
-    public static void notifyServerDownMessageHandler(JSONObject j_object){
+    public static void notifyServerDownMessageHandler(JSONObject j_object) {
 
         ServerState serverState = ServerState.getInstance();
         LeaderState leaderState = LeaderState.getInstance();
-
         Integer serverId = (int) (long)j_object.get("serverId");
 
         System.out.println("Server down notification received. Removing server: " + serverId);
 
-//        serverState.removeServer(serverId);
         leaderState.removeRemoteChatRoomsClientsByServerId(serverId);
         serverState.removeServerInCountList(serverId);
         serverState.removeServerInSuspectList(serverId);
