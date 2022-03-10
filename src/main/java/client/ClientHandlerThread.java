@@ -7,7 +7,6 @@ import server.Room;
 import messaging.ClientMessage;
 import messaging.MessageTransfer;
 import messaging.ServerMessage;
-//import messaging.MessageTransfer;
 import server.ServerState;
 import consensus.LeaderState;
 
@@ -42,10 +41,6 @@ public class ClientHandlerThread extends Thread {
         this.threadID = threadID;
     }
 
-    public Object getLock() {
-        return lock;
-    }
-
     public void setApprovedClientID(int approvedClientID) {
         this.approvedClientID = approvedClientID;
     }
@@ -53,7 +48,9 @@ public class ClientHandlerThread extends Thread {
     public void setApprovedRoomCreation(int approvedRoomCreation) {
         this.approvedRoomCreation = approvedRoomCreation;
     }
-
+    public Object getLock() {
+        return lock;
+    }
     // format message before sending it to client
     private void messageSend(ArrayList<Socket> socketList, String msg, List<String> msgList) throws IOException {
         JSONObject sendToClient = new JSONObject();
@@ -139,7 +136,9 @@ public class ClientHandlerThread extends Thread {
 
                 synchronized (connected) {
                     messageSend(null, "newid true", null);
-                    messageSend(socketList, "roomchange " + clientID + " _" + " MainHall-" + ServerState.getInstance().getServerID(), null);
+                    messageSend(socketList, "roomchange " + clientID + " _" + " MainHall-" +
+                            ServerState.getInstance().getServerID(), null);
+
                 }
             } else if (approvedClientID == 0) {
                 System.out.println("WARN : ID already in use");
@@ -379,29 +378,15 @@ public class ClientHandlerThread extends Thread {
                 messageSend(null, "deleteroom " + roomID + " true", null);
 
                 System.out.println("INFO : " + clientState.getClientID() + " is quit");
-                try {
-                    if (clientSocket.isClosed()) {
-                        clientSocket.close();
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+
 
             } else {
                 ServerState.getInstance().getRoomMap().get(roomID).removeParticipants(clientState);
                 messageSend(socketList, "roomchangeall " + clientState.getClientID() + " " + " " + " " + mainHallRoomID, null);
                 System.out.println("INFO : " + clientState.getClientID() + " is quit");
-                try {
-                    if (clientSocket.isClosed()) {
-                        clientSocket.close();
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+
             }
 
-            //TODO : check global, room change all members
-            // } else if(inAnotherServer){
         } else {
             System.out.println("WARN : Received room ID [" + roomID + "] does not exist");
             messageSend(null, "deleteroom " + roomID + " false", null);
