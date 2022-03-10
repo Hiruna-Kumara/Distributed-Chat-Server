@@ -26,7 +26,8 @@ public class ClientHandlerThread extends Thread {
     private final Socket clientSocket;
     private ClientState clientState;
     private Long threadID;
-    private int approved = -1;
+    private int approvedClientID = -1;
+    private int approvedRoomCreation = -1;
 
     public ClientHandlerThread(Socket clientSocket) {
         String serverID = ServerState.getInstance().getServerID();
@@ -39,8 +40,12 @@ public class ClientHandlerThread extends Thread {
         this.threadID = threadID;
     }
 
-    public void setApproved(int approved) {
-        this.approved = approved;
+    public void setApprovedClientID(int approvedClientID) {
+        this.approvedClientID = approvedClientID;
+    }
+
+    public void setApprovedRoomCreation(int approvedRoomCreation) {
+        this.approvedRoomCreation = approvedRoomCreation;
     }
 
     // format message before sending it to client
@@ -83,10 +88,10 @@ public class ClientHandlerThread extends Thread {
             while (!LeaderState.getInstance().isLeaderElected()) {
                 Thread.sleep(1000);
             }
-            while (approved == -1) {
+            while (approvedClientID == -1) {
                 // if self is leader get direct approval
                 if (LeaderState.getInstance().isLeader()) {
-                    approved = LeaderState.getInstance().isClientIDAlreadyTaken(clientID) ? 0 : 1;
+                    approvedClientID = LeaderState.getInstance().isClientIDAlreadyTaken(clientID) ? 0 : 1;
                 } else {
                     try {
                         // send client id approval request to leader
@@ -104,7 +109,7 @@ public class ClientHandlerThread extends Thread {
                     Thread.sleep(7000);
                 }
             }
-            if (approved == 1) {
+            if (approvedClientID == 1) {
                 System.out.println("INFO : Received correct ID ::" + jsonStringFromClient);
                 this.clientState = new ClientState(clientID, ServerState.getInstance().getMainHall().getRoomID(),
                         connected.getPort(), connected);
@@ -125,7 +130,7 @@ public class ClientHandlerThread extends Thread {
                     messageSend(null, "newid true", null);
                     messageSend(socketList, "roomchange " + clientID + " _" + " MainHall-" + ServerState.getInstance().getServerID(), null);
                 }
-            } else if (approved == 0) {
+            } else if (approvedClientID == 0) {
                 System.out.println("WARN : ID already in use");
                 // TODO: if client id is not approved throws error
                 messageSend(null, "newid false", null);
@@ -159,37 +164,71 @@ public class ClientHandlerThread extends Thread {
     }
 
     // create room
-    private void createRoom(String newRoomID, Socket connected, String jsonStringFromClient) throws IOException {
-        if (checkID(newRoomID) && !ServerState.getInstance().getRoomMap().containsKey(newRoomID)) {
-            System.out.println("INFO : Received correct room ID ::" + jsonStringFromClient);
-
-            String formerRoomID = clientState.getRoomID();
-
-            String former = clientState.getRoomID();
-            HashMap<String, ClientState> clientList = ServerState.getInstance().getRoomMap().get(former)
-                    .getClientStateMap();
-
-            // create broadcast list
-            ArrayList<Socket> formerSocket = new ArrayList<>();
-            for (String each : clientList.keySet()) {
-                formerSocket.add(clientList.get(each).getSocket());
+    private void createRoom(String newRoomID, Socket connected, String jsonStringFromClient) throws IOException, InterruptedException {
+        if (checkID(newRoomID)) {
+            // busy wait until leader is elected
+            while (!LeaderState.getInstance().isLeaderElected()) {
+                Thread.sleep(1000);
             }
+            while (approvedRoomCreation == -1) {
+                // if self is leader get direct approval
+                if (LeaderState.getInstance().isLeader()) {
+                    approvedRoomCreation = LeaderState.getInstance()
+                            .isRoomCreationApproved(clientState.getClientID(), newRoomID) ? 1 : 0;
+                } else {
+                    try {
+                        // send room creation approval request to leader
+                        MessageTransfer.sendToLeader(
+                                ServerMessage.getRoomCreateApprovalRequest(clientState.getClientID(),
+                                        newRoomID,
+                                        String.valueOf(ServerState.getInstance().getSelfID()),
+                                        String.valueOf(threadID)
+                                )
+                        );
 
-            ServerState.getInstance().getRoomMap().get(formerRoomID).removeParticipants(clientState);
+                        System.out.println("INFO : Room '" + newRoomID + "' create request by '"
+                                + clientState.getClientID() + "' sent to leader for approval");
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    Thread.sleep(7000);
+                }
+            }
+            if (approvedRoomCreation == 1) {
+                System.out.println("INFO : Received correct room ID ::" + jsonStringFromClient);
 
-            Room newRoom = new Room(clientState.getClientID(), newRoomID);
-            ServerState.getInstance().getRoomMap().put(newRoomID, newRoom);
+                String formerRoomID = clientState.getRoomID();
 
-            clientState.setRoomID(newRoomID);
-            newRoom.addParticipants(clientState);
+                String former = clientState.getRoomID();
 
-            synchronized (connected) { // TODO : check sync | lock on out buffer?
-                messageSend(null, "createroom " + newRoomID + " true", null);
-                messageSend(formerSocket,
-                        "roomchangeall " + clientState.getClientID() + " " + formerRoomID + " " + newRoomID, null);
+                // list of clients inside MainHall
+                HashMap<String, ClientState> clientList = ServerState.getInstance().getRoomMap().get(former).getClientStateMap();
+
+                // create broadcast list
+                ArrayList<Socket> formerSocket = new ArrayList<>();
+                for (String each : clientList.keySet()) {
+                    formerSocket.add(clientList.get(each).getSocket());
+                }
+                ServerState.getInstance().getRoomMap().get(formerRoomID).removeParticipants(clientState);
+
+                Room newRoom = new Room(clientState.getClientID(), newRoomID);
+                ServerState.getInstance().getRoomMap().put(newRoomID, newRoom);
+
+                clientState.setRoomID(newRoomID);
+                newRoom.addParticipants(clientState);
+
+                synchronized (connected) { //TODO : check sync | lock on out buffer?
+                    messageSend(null, "createroom " + newRoomID + " true", null);
+                    messageSend(formerSocket, "roomchangeall " + clientState.getClientID() + " " + formerRoomID + " " + newRoomID, null);
+                }
+            } else if (approvedRoomCreation == 0) {
+                System.out.println("WARN : Room id already in use or client already owns a room");
+                messageSend(null, "createroom " + newRoomID + " false", null);
+
             }
         } else {
-            System.out.println("WARN : Recieved wrong room ID type or room ID already in use");
+            System.out.println("WARN : Recieved wrong room ID type");
+
             messageSend(null, "createroom " + newRoomID + " false", null);
         }
     }

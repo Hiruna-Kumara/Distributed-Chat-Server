@@ -3,15 +3,14 @@ package consensus;
 import server.ServerState;
 
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
 
 public class LeaderState
 {
     private int leaderID;
     private final HashMap<String, Integer> activeClients = new HashMap<>(); // <clientID, serverID>
-    private final HashMap<String, String> pendingRooms = new HashMap<>(); // clientID, roomID, serverID
-    private final HashMap<String, String> activeRooms = new HashMap<>();
+    private final HashMap<String, String> activeClientRooms = new HashMap<>(); // <clientID, roomID>
+    private final HashMap<String, Integer> activeServerRooms = new HashMap<>(); // <roomID, serverID>
+
     // singleton
     private static LeaderState leaderStateInstance;
 
@@ -50,6 +49,22 @@ public class LeaderState
     public void removeApprovedClient(String clientID) {
         activeClients.remove( clientID );
     }
+    public boolean isRoomCreationApproved( String clientID, String roomID ) {
+        return !(activeServerRooms.containsKey( roomID ) && activeClientRooms.containsKey( clientID ));
+    }
+
+    public void addApprovedRoom(String clientID, String roomID, int serverID) {
+        activeClientRooms.put( clientID, roomID );
+        activeServerRooms.put( roomID, serverID );
+    }
+
+    public void removeApprovedRoom(String clientID, String roomID) {
+        if( activeClientRooms.get( clientID ).equals( roomID ) ) {
+            activeClientRooms.remove( clientID );
+            activeServerRooms.remove( roomID );
+        }
+    }
+
 
     public int getLeaderID()
     {

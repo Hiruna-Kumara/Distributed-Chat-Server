@@ -55,4 +55,21 @@ public class ServerMessage
         jsonObject.put("threadid", threadID);
         return jsonObject;
     }
+    public static JSONObject getRoomCreateApprovalRequest(String clientID, String roomID, String sender, String threadID) {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("type", "roomcreateapprovalrequest");
+        jsonObject.put("clientid", clientID);
+        jsonObject.put("roomid", roomID);
+        jsonObject.put("sender", sender);
+        jsonObject.put("threadid", threadID);
+        return jsonObject;
+    }
+
+    public static JSONObject getRoomCreateApprovalReply(String approved, String threadID) {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("type", "roomcreateapprovalreply");
+        jsonObject.put("approved", approved);
+        jsonObject.put("threadid", threadID);
+        return jsonObject;
+    }
 }
