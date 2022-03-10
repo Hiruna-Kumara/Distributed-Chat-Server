@@ -6,6 +6,16 @@ import java.util.*;
 
 public class ServerMessage {
 
+    private static ServerMessage instance = null;
+
+    private ServerMessage() {
+    }
+
+    public static synchronized ServerMessage getInstance() {
+        if (instance == null) instance = new ServerMessage();
+        return instance;
+    }
+
     @SuppressWarnings("unchecked")
     public static JSONObject getApprovalNewID(String approve) {
         JSONObject jsonObject = new JSONObject();
