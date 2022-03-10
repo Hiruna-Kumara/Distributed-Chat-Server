@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Arrays;
 
 import static messaging.MessageTransfer.*;
+import messaging.ServerMessage;
 
 public class ClientHandlerThread extends Thread {
 

@@ -3,7 +3,7 @@ package consensus;
 import messaging.MessageTransfer;
 import org.json.simple.JSONObject;
 import server.Server;
-import server.ServerMessage;
+import messaging.ServerMessage;
 import server.ServerState;
 
 import java.io.BufferedReader;
