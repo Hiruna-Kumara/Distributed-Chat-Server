@@ -21,8 +21,6 @@ public class BullyAlgorithm implements Runnable {
     static boolean receivedOk = false;
     static boolean leaderFlag = false;
     static boolean electionInProgress = false;
-    static int okCtr = 0;
-    static long startTimeOk = -1;
 
     public BullyAlgorithm(String operation) {
         this.operation = operation;
@@ -51,10 +49,10 @@ public class BullyAlgorithm implements Runnable {
                     Thread.sleep(7000);
                     if (!receivedOk) {
                         // OK not receivedOk. Set self as leader
-                        ServerState.getInstance().setLeaderID(ServerState.getInstance().getSelfID());
+                        LeaderState.getInstance().setLeaderID(ServerState.getInstance().getSelfID());
                         electionInProgress = false; // allow another election request to come in
                         leaderFlag = true;
-                        System.out.println("INFO : Server s" + ServerState.getInstance().getLeaderID()
+                        System.out.println("INFO : Server s" + LeaderState.getInstance().getLeaderID()
                                 + " is selected as leader! ");
                         Runnable sender = new BullyAlgorithm("Sender", "coordinator");
                         new Thread(sender).start();
@@ -65,28 +63,12 @@ public class BullyAlgorithm implements Runnable {
 
                         electionInProgress = false;
                         receivedOk = false;
-                        System.out.println("INFO : Election in progress = " + electionInProgress +
-                                " Received = " + receivedOk);
 
                         Runnable sender = new BullyAlgorithm("Sender", "election");
                         new Thread(sender).start();
                     }
                 } catch (Exception e) {
                     System.out.println("INFO : Exception in timer thread");
-                }
-                break;
-
-            case "TimerOk":
-                System.out.println("INFO : Inside timerOK thread");
-                while (true) {
-                    if ((!leaderFlag) && System.currentTimeMillis() - startTimeOk > (5000
-                            + 5000 * ServerState.getInstance().getNumberOfServersWithHigherIds())) {
-                        okCtr = 0;
-                        System.out.println("Higher Process Sent OK but Failed, so Start a new Election process");
-                        Runnable sender = new BullyAlgorithm("Sender", "election");
-                        new Thread(sender).start();
-                        break;
-                    }
                 }
                 break;
 
@@ -146,13 +128,13 @@ public class BullyAlgorithm implements Runnable {
                                 }
                                 case "coordinator":
                                     // {"option": "coordinator", "leader": 1}
-                                    ServerState.getInstance().setLeaderID(
+                                    LeaderState.getInstance().setLeaderID(
                                             Integer.parseInt(j_object.get("leader").toString()));
                                     leaderFlag = true;
                                     electionInProgress = false;
                                     receivedOk = false;
                                     System.out.println("INFO : Leader selected is s" +
-                                            ServerState.getInstance().getLeaderID());
+                                            LeaderState.getInstance().getLeaderID());
                                     break;
                                 case "heartbeat": {
                                     // {"option": "heartbeat", "sender": 1}
@@ -174,11 +156,12 @@ public class BullyAlgorithm implements Runnable {
             case "Heartbeat":
                 while (true) {
                     try {
+                        Thread.sleep(10);
                         if (leaderFlag
-                                && ServerState.getInstance().getSelfID() != ServerState.getInstance().getLeaderID()) {
+                                && ServerState.getInstance().getSelfID() != LeaderState.getInstance().getLeaderID()) {
                             Thread.sleep(1500);
                             Server destServer = ServerState.getInstance().getServers()
-                                    .get(ServerState.getInstance().getLeaderID());
+                                    .get(LeaderState.getInstance().getLeaderID());
 
                             MessageTransfer.send(
                                     ServerMessage.getHeartbeat(String.valueOf(ServerState.getInstance().getSelfID())),
@@ -204,7 +187,7 @@ public class BullyAlgorithm implements Runnable {
                         try {
                             sendElectionRequest();
                         } catch (Exception e) {
-                            System.out.println("WARN : Servers has failed, election request cannot be processed");
+                            System.out.println("WARN : Server has failed, election request cannot be processed");
                         }
                         break;
 
@@ -217,7 +200,11 @@ public class BullyAlgorithm implements Runnable {
                         break;
 
                     case "coordinator":
-                        sendCoordinatorMsg();
+                        try{
+                            sendCoordinatorMsg();
+                        }catch(Exception e){
+                            e.printStackTrace();
+                        }
                         break;
                 }
                 break;

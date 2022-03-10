@@ -1,8 +1,11 @@
-package server;
+package client;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import server.Room;
+import server.ServerMessage;
+import server.ServerState;
 
 import java.io.*;
 import java.net.Socket;

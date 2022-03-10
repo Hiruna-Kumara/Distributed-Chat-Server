@@ -1,5 +1,7 @@
 package server;
 
+import client.ClientHandlerThread;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.*;
@@ -11,7 +13,6 @@ public class ServerState {
     private String serverAddress = null;
     private int coordinationPort;
     private int clientsPort;
-    private int leaderID;
     private int numberOfServersWithHigherIds;
 
     private final HashMap<Integer, Server> servers = new HashMap<>(); // list of other servers
@@ -104,14 +105,6 @@ public class ServerState {
 
     public int getSelfID() {
         return selfID;
-    }
-
-    public int getLeaderID() {
-        return leaderID;
-    }
-
-    public void setLeaderID(int leaderID) {
-        this.leaderID = leaderID;
     }
 
     public int getNumberOfServersWithHigherIds() {

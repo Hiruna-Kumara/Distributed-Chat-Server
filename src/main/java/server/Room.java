@@ -1,14 +1,14 @@
 package server;
 
-import java.util.ArrayList;
+import client.ClientState;
+
 import java.util.HashMap;
-import java.util.List;
 
 public class Room {
     private final String ownerID;
     private final String roomID;
 
-    private final HashMap<String, ClientState> clientStateMap = new HashMap<>(); // <clientID,clientState>
+    private final HashMap<String,ClientState> clientStateMap = new HashMap<>(); // <clientID,clientState>
 
     // TODO : check sync keyword
     public Room(String identity, String roomID) {
