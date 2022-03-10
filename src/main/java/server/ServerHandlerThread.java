@@ -56,7 +56,7 @@ public class ServerHandlerThread extends Thread {
                                 .get(sender);
                         try {
                             // send client id approval reply to sender
-                            MessageTransfer.send(
+                            MessageTransfer.sendServer(
                                     ServerMessage.getClientIdApprovalReply(String.valueOf(approved), threadID),
                                     destServer
                             );
@@ -87,7 +87,6 @@ public class ServerHandlerThread extends Thread {
                         String threadID = j_object.get("threadid").toString();
 
                         boolean approved = LeaderState.getInstance().isRoomCreationApproved(roomID);
-
                         if( approved ) {
                             LeaderState.getInstance().addApprovedRoom( clientID, roomID, sender );
                         }
@@ -95,7 +94,7 @@ public class ServerHandlerThread extends Thread {
                                 .get( sender );
                         try {
                             // send room create approval reply to sender
-                            MessageTransfer.send(
+                            MessageTransfer.sendServer(
                                     ServerMessage.getRoomCreateApprovalReply( String.valueOf(approved), threadID ),
                                     destServer
                             );

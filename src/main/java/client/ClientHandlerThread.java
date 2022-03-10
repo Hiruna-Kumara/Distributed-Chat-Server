@@ -174,7 +174,7 @@ public class ClientHandlerThread extends Thread {
 
     // create room
     private void createRoom(String newRoomID, Socket connected, String jsonStringFromClient) throws IOException, InterruptedException {
-        if (checkID(newRoomID) || clientState.isRoomOwner()) {
+        if (checkID(newRoomID)  && !clientState.isRoomOwner()) {
             // busy wait until leader is elected
             while (!LeaderState.getInstance().isLeaderElected()) {
                 Thread.sleep(1000);
