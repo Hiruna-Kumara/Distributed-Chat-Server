@@ -9,14 +9,20 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.util.Arrays;
+import java.util.Scanner;
 
 
 public class Main {
     public static void main(String[] args) {
 
+        System.out.println("INFO : Enter server ID (s1)[default]:  ");
+        Scanner scanner = new Scanner(System.in);
+        String serverID = scanner.nextLine();  // Read user input
+
+        ServerState.getInstance().initializeWithConfigs(serverID, args[1]);
+
         System.out.println("LOG  : ------server started------");
 
-        ServerState.getInstance().initializeWithConfigs(args[0], args[1]);
         try {
             // throw exception if invalid server id provided
             if (ServerState.getInstance().getServerAddress() == null) {
@@ -56,7 +62,7 @@ public class Main {
             /**
              Handle coordination
              **/
-            ServerHandlerThread serverHandlerThread = new ServerHandlerThread( serverCoordinationSocket );
+            ServerHandlerThread serverHandlerThread = new ServerHandlerThread(serverCoordinationSocket);
 
 
             // starting the thread
@@ -77,7 +83,7 @@ public class Main {
                 Socket clientSocket = serverClientsSocket.accept();
                 ClientHandlerThread clientHandlerThread = new ClientHandlerThread(clientSocket);
                 // starting the thread
-                ServerState.getInstance().addClientHandlerThreadToMap( clientHandlerThread );
+                ServerState.getInstance().addClientHandlerThreadToMap(clientHandlerThread);
                 clientHandlerThread.start();
             }
         } catch (IllegalArgumentException e) {
