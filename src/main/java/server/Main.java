@@ -41,12 +41,6 @@ public class Main {
             System.out.println("LOG  : TCP Server waiting for clients on port " +
                     serverClientsSocket.getLocalPort()); // port open for clients
 
-            if (true) {
-                System.out.println("INFO : Failure Detection is running GOSSIP mode");
-                startGossip();
-                startConsensus();
-            }
-
             /**
              * Maintain consensus using Bully Algorithm
              **/
@@ -57,6 +51,15 @@ public class Main {
 
             Runnable heartbeat = new BullyAlgorithm("Heartbeat");
             new Thread(heartbeat).start();
+
+            /**
+             Heartbeat detection using gossiping
+             **/
+            if (true) {
+                System.out.println("INFO : Failure Detection is running GOSSIP mode");
+                startGossip();
+                startConsensus();
+            }
 
             /**
              * Handle clients
