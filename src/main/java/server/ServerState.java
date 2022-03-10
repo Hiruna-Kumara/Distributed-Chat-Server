@@ -3,6 +3,7 @@ package server;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ServerState {
 
@@ -13,6 +14,10 @@ public class ServerState {
     private int clientsPort;
     private int leaderID;
     private int numberOfServersWithHigherIds;
+
+    private final ConcurrentHashMap<Integer, String> suspectList = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Integer, Integer> heartbeatCountList = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Integer> voteSet = new ConcurrentHashMap<>();
 
     private final HashMap<Integer, Server> servers = new HashMap<>(); // list of other servers
 
@@ -132,5 +137,21 @@ public class ServerState {
 
     public ArrayList<ClientHandlerThread> getClientHandlerThreadList() {
         return clientHandlerThreadList;
+    }
+
+    public synchronized void removeServerInCountList(Integer serverId) {
+        heartbeatCountList.remove(serverId);
+    }
+
+    public ConcurrentHashMap<Integer, Integer> getHeartbeatCountList() {
+        return heartbeatCountList;
+    }
+
+    public synchronized void removeServerInSuspectList(Integer serverId) {
+        suspectList.remove(serverId);
+    }
+    
+    public ConcurrentHashMap<Integer, String> getSuspectList() {
+        return suspectList;
     }
 }
