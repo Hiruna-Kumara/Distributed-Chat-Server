@@ -14,20 +14,20 @@ public class ClientMessageContext {
         QUIT
     }
 
-    CLIENT_MSG_TYPE messageType;
+    public CLIENT_MSG_TYPE messageType;
 
-    String clientID;
-    String currentRoomID;
-    String formerRoomID;
-    String newRoomID;
+    public String clientID;
+    public String currentRoomID;
+    public String formerRoomID;
+    public String newRoomID;
 
-    int currentServerID;
+    public int currentServerID;
 
-    String body;
+    public String body;
 
     //flags
-    boolean isNewClientIdApproved;
-    boolean isNewRoomIdApproved;
+    public boolean isNewClientIdApproved;
+    public boolean isNewRoomIdApproved;
 
 
     public ClientMessageContext setMessageType(CLIENT_MSG_TYPE messageType) {
