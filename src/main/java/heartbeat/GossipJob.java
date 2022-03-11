@@ -21,7 +21,6 @@ import java.util.Random;
 public class GossipJob implements Job{
 
     private ServerState serverState = ServerState.getInstance();
-    private LeaderState leaderState = LeaderState.getInstance();
     private ServerMessage serverMessage = ServerMessage.getInstance();
 
     @Override
