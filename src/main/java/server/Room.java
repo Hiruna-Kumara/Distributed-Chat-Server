@@ -22,6 +22,10 @@ public class Room {
         return roomID;
     }
 
+    public synchronized int getServerID() {
+        return serverID;
+    }
+
     public synchronized HashMap<String, ClientState> getClientStateMap() {
         return clientStateMap;
     }

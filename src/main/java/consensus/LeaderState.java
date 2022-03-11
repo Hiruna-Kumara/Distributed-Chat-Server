@@ -2,6 +2,7 @@ package consensus;
 
 import server.ServerState;
 import server.Room;
+import client.ClientState;
 
 import java.util.HashMap;
 
@@ -55,9 +56,22 @@ public class LeaderState
 
     }
 
+    public void addClientToRoomID(ClientState client, String roomID){
+        this.activeChatRooms.get(roomID).getClientStateMap().put(client.getClientID(),client);
+    }
+
     public void addApprovedRoom(String clientID, String roomID, int serverID) {
         Room room = new Room( clientID, roomID, serverID );
         activeChatRooms.put( roomID, room );
+    }
+
+    public int getServerIdIfRoomExist(String roomID) {
+        if (this.activeChatRooms.containsKey(roomID)) {
+            Room targetRoom = activeChatRooms.get(roomID);
+            return targetRoom.getServerID();
+        } else {
+            return -1;
+        }
     }
 
     public void removeApprovedRoom(String roomID) {
@@ -73,5 +87,11 @@ public class LeaderState
     public void setLeaderID( int leaderID )
     {
         this.leaderID = leaderID;
+    }
+
+    public void removeJoinReqApprovedClientFromRoom(String clientID, String formerRoomID, int serverID) {
+        this.activeClients.remove(clientID);
+        HashMap clientStateMap = this.activeChatRooms.get(formerRoomID).getClientStateMap();
+        if (clientStateMap != null) clientStateMap.remove(clientID);
     }
 }

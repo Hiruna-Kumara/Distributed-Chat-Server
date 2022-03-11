@@ -75,4 +75,40 @@ public class ServerMessage
         jsonObject.put("threadid", threadID);
         return jsonObject;
     }
+
+    @SuppressWarnings("unchecked")
+    public static JSONObject getJoinRoomRequest(String clientID, String roomID, String formerRoomID, String sender, String threadID, String isLocalRoomChange) {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("type", "joinroomapprovalrequest");
+        jsonObject.put("sender", sender);
+        jsonObject.put("roomid", roomID);
+        jsonObject.put("former", formerRoomID);
+        jsonObject.put("clientid", clientID);
+        jsonObject.put("threadid", threadID);
+        jsonObject.put("isLocalRoomChange", isLocalRoomChange);
+        return jsonObject;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static JSONObject getJoinRoomApprovalReply(String approved, String threadID, String host, String port) {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("type", "joinroomapprovalreply");
+        jsonObject.put("approved", approved);
+        jsonObject.put("host", host);
+        jsonObject.put("port", port);
+        jsonObject.put("threadid", threadID);
+        return jsonObject;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static JSONObject getMoveJoinRequest(String clientID, String roomID, String formerRoomID, String sender, String threadID) {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("type", "movejoinack");
+        jsonObject.put("sender", sender);
+        jsonObject.put("roomid", roomID);
+        jsonObject.put("former", formerRoomID);
+        jsonObject.put("clientid", clientID);
+        jsonObject.put("threadid", threadID);
+        return jsonObject;
+    }
 }

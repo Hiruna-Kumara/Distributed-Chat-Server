@@ -39,6 +39,16 @@ public class ClientMessage {
     }
 
     @SuppressWarnings("unchecked")
+    public static JSONObject getRoute(String roomID, String host, String port) {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("type", "route");
+        jsonObject.put("roomid", roomID);
+        jsonObject.put("host", host);
+        jsonObject.put("port", port);
+        return jsonObject;
+    }
+
+    @SuppressWarnings("unchecked")
     public static JSONObject getCreateRoomChange(String clientID, String former, String roomID) {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("type", "roomchange");
