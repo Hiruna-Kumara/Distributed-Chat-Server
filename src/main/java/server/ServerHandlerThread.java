@@ -180,7 +180,7 @@ public class ServerHandlerThread extends Thread {
                         int sender = Integer.parseInt(j_object.get("sender").toString());
                         String threadID = j_object.get("threadid").toString();
 
-                        ClientState client = new ClientState(clientID,roomID,-1,null);
+                        ClientState client = new ClientState(clientID,roomID,null);
                         LeaderState.getInstance().addApprovedClient(clientID, sender);
                         LeaderState.getInstance().addClientToRoomID(client,roomID);
 

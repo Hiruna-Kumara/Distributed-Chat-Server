@@ -237,8 +237,8 @@ public class BullyAlgorithm implements Runnable {
                 leaderFlag = true;
                 electionInProgress = false;
                 receivedOk = false;
-                System.out.println( "INFO : Leader selected is s" +
-                        LeaderState.getInstance().getLeaderID() );
+                System.out.println(  "INFO : Server s" + LeaderState.getInstance().getLeaderID()
+                        + " is selected as leader! " );
                 break;
             case "heartbeat": {
                 // {"option": "heartbeat", "sender": 1}
