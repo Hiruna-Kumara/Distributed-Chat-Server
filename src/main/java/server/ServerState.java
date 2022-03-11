@@ -25,6 +25,7 @@ public class ServerState {
 
     private final HashMap<String, Room> roomMap = new HashMap<>();  // maintain local room object list <roomID,roomObject>
 
+    
     // singleton
     private static ServerState serverStateInstance;
 
