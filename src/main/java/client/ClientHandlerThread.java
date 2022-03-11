@@ -3,11 +3,10 @@ package client;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import server.Room;
+import server.*;
 import messaging.ClientMessage;
 import messaging.MessageTransfer;
 import messaging.ServerMessage;
-import server.ServerState;
 import consensus.LeaderState;
 
 import java.io.*;
@@ -17,6 +16,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Arrays;
+import java.net.ServerSocket;
+import java.rmi.Naming;
+
 
 import static messaging.MessageTransfer.*;
 
@@ -153,10 +155,9 @@ public class ClientHandlerThread extends Thread {
 
     // list
     private void list(Socket connected, String jsonStringFromClient) throws IOException {
-        List<String> roomsList = new ArrayList<>(ServerState.getInstance().getRoomMap().keySet());
 
         System.out.println("INFO : rooms in the system :");
-        messageSend(null, "roomlist ", roomsList);
+        messageSend(null, "roomlist ", SharedAttributes.getRooms());
     }
 
     // who
