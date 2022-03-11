@@ -23,7 +23,7 @@ public class ServerState {
     private final HashMap<Long, ClientHandlerThread> clientHandlerThreadMap = new HashMap<>();
 
 
-    private final HashMap<String, Room> roomMap = new HashMap<>(); // maintain room object list <roomID,roomObject>
+    private final HashMap<String, Room> roomMap = new HashMap<>();  // maintain local room object list <roomID,roomObject>
 
     // singleton
     private static ServerState serverStateInstance;

@@ -42,18 +42,18 @@ public class ServerHandlerThread extends Thread {
                 if (j_object.containsKey("leader") && j_object.containsKey("coordinatoor")) {
                     index = Integer.parseInt(j_object.get("leader").toString());
                     SharedAttributes.setNeighbourIndex(index);
-                } else if (j_object.containsKey("sender")){
+                } else if (j_object.containsKey("sender")) {
                     index = Integer.parseInt(j_object.get("sender").toString());
                     SharedAttributes.setNeighbourIndex(index);
                 }
 
-                if (MessageTransfer.hasKey( j_object, "room")) {
-                    String rooms =  (String) j_object.get("room");
+                if (MessageTransfer.hasKey(j_object, "room")) {
+                    String rooms = (String) j_object.get("room");
                     SharedAttributes sharedAttributes = new SharedAttributes();
                     sharedAttributes.setRoom(rooms);
                 }
 
-                if (MessageTransfer.hasKey( j_object, "delete-room")) {
+                if (MessageTransfer.hasKey(j_object, "delete-room")) {
                     String deletedRoom = (String) j_object.get("delete-room");
                     SharedAttributes sharedAttributes = new SharedAttributes();
                     sharedAttributes.removeRoomFromGlobalRoomList(deletedRoom);
@@ -83,7 +83,7 @@ public class ServerHandlerThread extends Thread {
                                     ServerMessage.getClientIdApprovalReply(String.valueOf(approved), threadID),
                                     destServer
                             );
-                            System.out.println("INFO : Client ID '" + clientID +"' from s" + sender + " is" + (approved ? " ":" not ") + "approved");
+                            System.out.println("INFO : Client ID '" + clientID + "' from s" + sender + " is" + (approved ? " " : " not ") + "approved");
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -91,17 +91,24 @@ public class ServerHandlerThread extends Thread {
                             && j_object.get("approved") != null && j_object.get("threadid") != null) {
 
                         // non leader processes client ID approval request reply received
-                        int approved = Boolean.parseBoolean( j_object.get("approved").toString() ) ? 1 : 0;
-                        Long threadID = Long.parseLong( j_object.get("threadid").toString() );
+                        int approved = Boolean.parseBoolean(j_object.get("approved").toString()) ? 1 : 0;
+                        Long threadID = Long.parseLong(j_object.get("threadid").toString());
 
                         ClientHandlerThread clientHandlerThread = ServerState.getInstance()
-                                .getClientHandlerThread( threadID );
-                        clientHandlerThread.setApprovedClientID( approved );
+                                .getClientHandlerThread(threadID);
+                        clientHandlerThread.setApprovedClientID(approved);
                         Object lock = clientHandlerThread.getLock();
-                        synchronized( lock ) {
+                        synchronized (lock) {
                             lock.notify();
                         }
-                    } else if (j_object.get("type").equals("joinroomapprovalrequest")){
+                    } else if (j_object.get("type").equals("deleteroom")) {
+                        String roomID = j_object.get("roomid").toString();
+                        // leader removes deleted room from global room list
+                        LeaderState.getInstance().removeApprovedRoom(roomID);
+                        System.out.println("INFO : Room '"+ roomID + "' deleted by leader");
+
+
+                    } else if (j_object.get("type").equals("joinroomapprovalrequest")) {
 
                         // leader processes join room approval request received
 
@@ -152,7 +159,7 @@ public class ServerHandlerThread extends Thread {
                                 e.printStackTrace();
                             }
                         }
-                    } else if ( j_object.get("type").equals("joinroomapprovalreply") ) {
+                    } else if (j_object.get("type").equals("joinroomapprovalreply")) {
 
                         // non leader processes room create approval request reply received
                         int approved = Boolean.parseBoolean(j_object.get("approved").toString()) ? 1 : 0;
@@ -170,7 +177,7 @@ public class ServerHandlerThread extends Thread {
                         //synchronized( lock ) {
                         //    lock.notify();
                         //}
-                    }else if(j_object.get("type").equals("movejoinack")) {
+                    } else if (j_object.get("type").equals("movejoinack")) {
                         //leader process move join acknowledgement from the target room server after change
 
                         //parse params
@@ -180,12 +187,12 @@ public class ServerHandlerThread extends Thread {
                         int sender = Integer.parseInt(j_object.get("sender").toString());
                         String threadID = j_object.get("threadid").toString();
 
-                        ClientState client = new ClientState(clientID,roomID,null);
+                        ClientState client = new ClientState(clientID, roomID, null);
                         LeaderState.getInstance().addApprovedClient(clientID, sender);
-                        LeaderState.getInstance().addClientToRoomID(client,roomID);
+                        LeaderState.getInstance().addClientToRoomID(client, roomID);
 
-                        System.out.println("INFO : Moved Client ["+clientID+"] to server s"+sender
-                                +" and room ["+roomID+"] is updated as current room");
+                        System.out.println("INFO : Moved Client [" + clientID + "] to server s" + sender
+                                + " and room [" + roomID + "] is updated as current room");
 
                     } else {
                         System.out.println("WARN : Command error, Corrupted JSON from Server");

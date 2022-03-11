@@ -49,12 +49,24 @@ public class LeaderState
     }
 
     public void removeApprovedClient(String clientID) {
+
         activeClients.remove( clientID );
+        removeRoomIfClientOwnsRoom( clientID );
     }
     public boolean isRoomCreationApproved( String roomID ) {
         return !(activeChatRooms.containsKey( roomID ));
 
     }
+
+    public void removeRoomIfClientOwnsRoom(String clientID){
+        for( Room room : activeChatRooms.values() ) {
+            if( room.getOwnerIdentity().equals( clientID ) ) {
+                removeApprovedRoom( room.getRoomID() );
+                break;
+            }
+        }
+    }
+
 
     public void addClientToRoomID(ClientState client, String roomID){
         this.activeChatRooms.get(roomID).getClientStateMap().put(client.getClientID(),client);
