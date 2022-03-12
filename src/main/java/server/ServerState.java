@@ -104,6 +104,30 @@ public class ServerState {
         return false;
     }
 
+    // used for updating leader client list when newly elected
+    public List<String> getClientIdList() {
+        List<String> clientIdList = new ArrayList<>();
+        for (ClientHandlerThread clientHandlerThread: clientHandlerThreadMap.values()) {
+            clientIdList.add( clientHandlerThread.getClientId() );
+        }
+        return clientIdList;
+    }
+
+    // used for updating leader chat room list when newly elected
+    public List<List<String>> getChatRoomList() {
+        // [ [clientID, roomID, serverID] ]
+        List<List<String>> chatRoomList = new ArrayList<>();
+        for (Room room: roomMap.values()) {
+            List<String> roomInfo = new ArrayList<>();
+            roomInfo.add( room.getOwnerIdentity() );
+            roomInfo.add( room.getRoomID() );
+            roomInfo.add( String.valueOf(room.getServerID()) );
+
+            chatRoomList.add( roomInfo );
+        }
+        return chatRoomList;
+    }
+
     public String getServerID() {
         return serverID;
     }
