@@ -2,11 +2,11 @@ package messaging;
 
 import org.json.simple.JSONObject;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 
-
-public class ServerMessage {
-
+public class ServerMessage
+{
     private static ServerMessage instance = null;
 
     private ServerMessage() {
@@ -97,26 +97,6 @@ public class ServerMessage {
     }
 
     @SuppressWarnings("unchecked")
-    public static JSONObject getDeleteRoomInform(String serverID, String roomID) {
-        // {"type" : "deleteroom", "serverid" : "s1", "roomid" : "jokes"}
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("type", "deleteroom");
-        jsonObject.put("serverid", serverID);
-        jsonObject.put("roomid", roomID);
-        return jsonObject;
-    }
-
-
-    @SuppressWarnings("unchecked")
-    public static JSONObject getQuit(String clientID) {
-        // {"type" : "quit", "clientid" : "Adel"}
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("type", "quit");
-        jsonObject.put("clientid", clientID);
-        return jsonObject;
-    }
-
-    @SuppressWarnings("unchecked")
     public static JSONObject getJoinRoomRequest(String clientID, String roomID, String formerRoomID, String sender, String threadID, String isLocalRoomChange) {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("type", "joinroomapprovalrequest");
@@ -149,6 +129,48 @@ public class ServerMessage {
         jsonObject.put("former", formerRoomID);
         jsonObject.put("clientid", clientID);
         jsonObject.put("threadid", threadID);
+        return jsonObject;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static JSONObject getQuit(String clientID, String formerRoomID) {
+        // {"type" : "quit", "clientid" : "Adel"}
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("type", "quit");
+        jsonObject.put("clientid", clientID);
+        jsonObject.put("former", formerRoomID);
+        return jsonObject;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static JSONObject getListRequest(String clientID, String threadID, String sender) {
+        // {"type" : "listrequest", "clientid" : "Adel", "sender" : 1, "threadid" : 12 }
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("type", "listrequest");
+        jsonObject.put("sender", sender);
+        jsonObject.put("clientid", clientID);
+        jsonObject.put("threadid", threadID);
+        return jsonObject;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static JSONObject getListResponse(ArrayList<String> roomIDList, String threadID) {
+        // {"type" : "listresponse", "rooms" : ["room-1","MainHall-s1","MainHall-s2"], "threadid" : 12 }
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("type", "listresponse");
+        jsonObject.put("threadid", threadID);
+        jsonObject.put("rooms", roomIDList);
+        return jsonObject;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static JSONObject getDeleteRoomRequest(String ownerID, String roomID, String mainHallID) {
+        // {"type" : "deleterequest", "owner" : "Adel", "roomid" : "jokes", "mainhall" : "MainHall-s1" }
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("type", "deleterequest");
+        jsonObject.put("owner", ownerID);
+        jsonObject.put("roomid", roomID);
+        jsonObject.put("mainhall", mainHallID);
         return jsonObject;
     }
 
