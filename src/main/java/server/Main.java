@@ -29,8 +29,8 @@ public class Main {
         System.out.println("LOG  : ------server started------");
 
         try {
-            // throw exception if invalid server id provided
-            if( ServerState.getInstance().getServerAddress() == null ) {
+             // throw exception if invalid server id provided
+             if( ServerState.getInstance().getServerAddress() == null ) {
                 throw new IllegalArgumentException();
             }
 
@@ -42,7 +42,7 @@ public class Main {
 
             // bind SocketAddress with inetAddress and port
             SocketAddress endPointCoordination = new InetSocketAddress(
-                    ServerState.getInstance().getServerAddress(),
+                    "0.0.0.0",//ServerState.getInstance().getServerAddress()
                     ServerState.getInstance().getCoordinationPort()
             );
             serverCoordinationSocket.bind( endPointCoordination );
@@ -58,7 +58,7 @@ public class Main {
 
             // bind SocketAddress with inetAddress and port
             SocketAddress endPointClient = new InetSocketAddress(
-                    ServerState.getInstance().getServerAddress(),
+                    "0.0.0.0",//ServerState.getInstance().getServerAddress()
                     ServerState.getInstance().getClientsPort()
             );
             serverClientsSocket.bind(endPointClient);
