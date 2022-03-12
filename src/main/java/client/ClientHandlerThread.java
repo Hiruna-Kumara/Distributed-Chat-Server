@@ -481,7 +481,7 @@ public class ClientHandlerThread extends Thread {
             if (approvedJoinRoom == 1) {
 
                 //broadcast to former room
-                ServerState.getInstance().getRoomMap().get(formerRoomID).removeParticipants(clientState.getClientID());
+                ServerState.getInstance().removeClient(clientState.getClientID(), formerRoomID, getId());
                 System.out.println("INFO : client [" + clientState.getClientID() + "] left room :" + formerRoomID);
 
                 //create broadcast list
@@ -673,7 +673,7 @@ public class ClientHandlerThread extends Thread {
         messageSend(socketList, msgCtx.setMessageType(CLIENT_MSG_TYPE.BROADCAST_JOIN_ROOM));
 
         //update Local Server
-        ServerState.getInstance().getRoomMap().get(clientState.getRoomID()).removeParticipants(clientState.getClientID());
+        ServerState.getInstance().removeClient(clientState.getClientID(), clientState.getRoomID(), getId());
 
         // Update global list of Leader
         // send quit message to leader if self is not leader
