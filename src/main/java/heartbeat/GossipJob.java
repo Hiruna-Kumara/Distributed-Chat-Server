@@ -23,6 +23,7 @@ public class GossipJob implements Job{
     private ServerState serverState = ServerState.getInstance();
     private ServerMessage serverMessage = ServerMessage.getInstance();
 
+    
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException{
 
