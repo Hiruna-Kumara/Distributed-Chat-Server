@@ -17,7 +17,6 @@ import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
 
 import java.util.Arrays;
-import java.util.Arrays;
 import java.util.Scanner;
 
 
@@ -34,9 +33,10 @@ public class Main {
 
         try {
             // throw exception if invalid server id provided
-            if (ServerState.getInstance().getServerAddress() == null) {
+            if( ServerState.getInstance().getServerAddress() == null ) {
                 throw new IllegalArgumentException();
             }
+
             /**
              Coordination socket
              **/
@@ -48,37 +48,36 @@ public class Main {
                     ServerState.getInstance().getServerAddress(),
                     ServerState.getInstance().getCoordinationPort()
             );
-            serverCoordinationSocket.bind(endPointCoordination);
-            System.out.println(serverCoordinationSocket.getLocalSocketAddress());
-            System.out.println("LOG  : TCP Server waiting for coordination on port " +
-                    serverCoordinationSocket.getLocalPort()); // port open for coordination
+            serverCoordinationSocket.bind( endPointCoordination );
+            System.out.println( serverCoordinationSocket.getLocalSocketAddress() );
+            System.out.println( "LOG  : TCP Server waiting for coordination on port " +
+                                        serverCoordinationSocket.getLocalPort() ); // port open for coordination
 
             /**
              Client socket
              **/
-
             // server socket for clients
             ServerSocket serverClientsSocket = new ServerSocket();
 
             // bind SocketAddress with inetAddress and port
             SocketAddress endPointClient = new InetSocketAddress(
                     ServerState.getInstance().getServerAddress(),
-                    ServerState.getInstance().getClientsPort());
+                    ServerState.getInstance().getClientsPort()
+            );
             serverClientsSocket.bind(endPointClient);
             System.out.println(serverClientsSocket.getLocalSocketAddress());
-            System.out.println("LOG  : TCP Server waiting for clients on port " +
+            System.out.println("LOG  : TCP Server waiting for clients on port "+
                     serverClientsSocket.getLocalPort()); // port open for clients
+
             /**
              Handle coordination
              **/
-            ServerHandlerThread serverHandlerThread = new ServerHandlerThread(serverCoordinationSocket);
-
-
+            ServerHandlerThread serverHandlerThread = new ServerHandlerThread( serverCoordinationSocket );
             // starting the thread
             serverHandlerThread.start();
 
             /**
-             * Maintain consensus using Bully Algorithm
+             Maintain consensus using Bully Algorithm
              **/
             BullyAlgorithm.initialize();
 
@@ -99,9 +98,9 @@ public class Main {
              **/
             while (true) {
                 Socket clientSocket = serverClientsSocket.accept();
-                ClientHandlerThread clientHandlerThread = new ClientHandlerThread(clientSocket);
+                ClientHandlerThread clientHandlerThread = new ClientHandlerThread( clientSocket );
                 // starting the thread
-                ServerState.getInstance().addClientHandlerThreadToMap(clientHandlerThread);
+                ServerState.getInstance().addClientHandlerThreadToMap( clientHandlerThread );
                 clientHandlerThread.start();
             }
         } catch (IllegalArgumentException e) {
