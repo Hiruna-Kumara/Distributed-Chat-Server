@@ -6,6 +6,7 @@ import client.ClientHandlerThread;
 import client.ClientState;
 import consensus.BullyAlgorithm;
 import consensus.LeaderState;
+import consensus.LeaderStateUpdate;
 import messaging.MessageTransfer;
 import messaging.ServerMessage;
 import org.json.simple.JSONArray;
@@ -21,6 +22,7 @@ import java.util.ArrayList;
 public class ServerHandlerThread extends Thread {
 
     private final ServerSocket serverCoordinationSocket;
+    private LeaderStateUpdate leaderStateUpdate = new LeaderStateUpdate();
 
     public ServerHandlerThread(ServerSocket serverCoordinationSocket) {
         this.serverCoordinationSocket = serverCoordinationSocket;
@@ -252,6 +254,25 @@ public class ServerHandlerThread extends Thread {
                         // leader removes client from global room list
                         LeaderState.getInstance().removeClient(clientID, formerRoomID);
                         System.out.println("INFO : Client '" + clientID + "' deleted by leader");
+
+                    } else if (j_object.get("type").equals("leaderstateupdate")) {
+                        if( LeaderState.getInstance().isLeaderElectedAndIamLeader() )
+                        {
+                            if( !leaderStateUpdate.isAlive() )
+                            {
+                                leaderStateUpdate = new LeaderStateUpdate();
+                                leaderStateUpdate.start();
+                            }
+                            leaderStateUpdate.receiveUpdate( j_object );
+                        }
+
+                    } else if (j_object.get("type").equals("leaderstateupdatecomplete")) {
+                        int serverID = Integer.parseInt(j_object.get("serverid").toString());
+                        if( LeaderState.getInstance().isLeaderElectedAndMessageFromLeader( serverID ) )
+                        {
+                            System.out.println("INFO : Received leader update complete message from s"+serverID);
+                            BullyAlgorithm.leaderUpdateComplete = true;
+                        }
 
                     } else if (j_object.get("type").equals("gossip")) {
                         GossipJob.receiveMessages(j_object);
