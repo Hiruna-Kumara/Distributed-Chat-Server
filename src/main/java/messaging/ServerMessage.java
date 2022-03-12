@@ -1,9 +1,11 @@
 package messaging;
 
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class ServerMessage
 {
@@ -50,6 +52,40 @@ public class ServerMessage
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("option", "ok");
         jsonObject.put("sender", sender);
+        return jsonObject;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static JSONObject getLeaderStateUpdate( List<String> clientIdList, List<List<String>> chatRoomList) {
+    // { "type": "leaderstateupdate", "clients": ["Adel", "John", "Daphne"],
+        // "chatrooms": [{"clientid" : "Adel", "roomid" : "jokes", "serverid" : "s1"}, ..] }
+
+        JSONArray clients = new JSONArray();
+        clients.addAll( clientIdList );
+
+        JSONArray chatRooms = new JSONArray();
+        for( List<String> chatRoomObj : chatRoomList ) {
+            // {"clientid" : "Adel", "roomid" : "jokes", "serverid" : "s1"}
+            JSONObject chatRoom = new JSONObject();
+            chatRoom.put( "clientid", chatRoomObj.get( 0 ) );
+            chatRoom.put( "roomid", chatRoomObj.get( 1 ) );
+            chatRoom.put( "serverid", chatRoomObj.get( 2 ) );
+            chatRooms.add( chatRoom );
+        }
+
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("type", "leaderstateupdate");
+        jsonObject.put("clients", clients);
+        jsonObject.put("chatrooms", chatRooms);
+        return jsonObject;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static JSONObject getLeaderStateUpdateComplete(String serverID) {
+        // {"type" : "leaderstateupdatecomplete", "serverid" : "s3"}
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("type", "leaderstateupdatecomplete");
+        jsonObject.put("serverid", serverID);
         return jsonObject;
     }
 
