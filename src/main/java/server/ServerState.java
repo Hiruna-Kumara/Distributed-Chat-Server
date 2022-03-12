@@ -5,7 +5,7 @@ import client.ClientHandlerThread;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ServerState {
@@ -17,10 +17,11 @@ public class ServerState {
     private int clientsPort;
     private int numberOfServersWithHigherIds;
 
-    private AtomicBoolean ongoingConsensus = new AtomicBoolean(false);
-    private final ConcurrentHashMap<Integer, String> suspectList = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<Integer, Integer> heartbeatCountList = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<String, Integer> voteSet = new ConcurrentHashMap<>();
+    private AtomicBoolean ongoingConsensus;
+
+    private ConcurrentHashMap<Integer, String> suspectList;
+    private ConcurrentHashMap<Integer, Integer> heartbeatCountList;
+    private ConcurrentHashMap<String, Integer> voteSet;
 
     private final HashMap<Integer, Server> servers = new HashMap<>(); // list of other servers
 
@@ -29,21 +30,23 @@ public class ServerState {
     // maintain client handler thread map <threadID, thread>
     private final HashMap<Long, ClientHandlerThread> clientHandlerThreadMap = new HashMap<>();
 
-
     private final HashMap<String, Room> roomMap = new HashMap<>();  // maintain local room object list <roomID,roomObject>
 
-    
-    // singleton
+    //singleton
     private static ServerState serverStateInstance;
 
     private ServerState() {
+        suspectList = new ConcurrentHashMap<>();
+        heartbeatCountList = new ConcurrentHashMap<>();
+        ongoingConsensus = new AtomicBoolean(false);
+        voteSet = new ConcurrentHashMap<>();
     }
 
     public static ServerState getInstance() {
         if (serverStateInstance == null) {
             synchronized (ServerState.class) {
                 if (serverStateInstance == null) {
-                    serverStateInstance = new ServerState();// instance will be created at request time
+                    serverStateInstance = new ServerState();//instance will be created at request time
                 }
             }
         }
@@ -80,25 +83,23 @@ public class ServerState {
         // set number of servers with higher ids
         numberOfServersWithHigherIds = servers.size() - selfID;
 
-        this.mainHall = new Room("default-" + serverID, "MainHall-" + serverID, selfID);
-        this.roomMap.put("MainHall-" + serverID, mainHall); // TODO: owner id of mainhall should be ""
-
+        this.mainHall = new Room("", getMainHallID(), selfID);
+        this.roomMap.put(getMainHallID(), mainHall);
 
     }
 
-        public void addClientHandlerThreadToMap(ClientHandlerThread clientHandlerThread) {
-        clientHandlerThreadMap.put( clientHandlerThread.getId(), clientHandlerThread );
+    public void addClientHandlerThreadToMap(ClientHandlerThread clientHandlerThread) {
+        clientHandlerThreadMap.put(clientHandlerThread.getId(), clientHandlerThread);
     }
 
     public ClientHandlerThread getClientHandlerThread(Long threadID) {
-        return clientHandlerThreadMap.get( threadID );
+        return clientHandlerThreadMap.get(threadID);
     }
 
     public boolean isClientIDAlreadyTaken(String clientID) {
         for (Map.Entry<String, Room> entry : this.getRoomMap().entrySet()) {
             Room room = entry.getValue();
-            if (room.getClientStateMap().containsKey(clientID))
-                return true;
+            if (room.getClientStateMap().containsKey(clientID)) return true;
         }
         return false;
     }
@@ -131,6 +132,10 @@ public class ServerState {
         return servers;
     }
 
+    public void removeServer(Integer serverId) {
+        servers.remove(serverId);
+    }
+
     public Room getMainHall() {
         return mainHall;
     }
@@ -139,12 +144,12 @@ public class ServerState {
         return roomMap;
     }
 
-    public synchronized void removeServerInCountList(Integer serverId) {
-        heartbeatCountList.remove(serverId);
+    public String getMainHallID() {
+        return getMainHallIDbyServerInt(this.selfID);
     }
 
-    public ConcurrentHashMap<Integer, Integer> getHeartbeatCountList() {
-        return heartbeatCountList;
+    public static String getMainHallIDbyServerInt(int server) {
+        return "MainHall-s" + server;
     }
 
     public synchronized void removeServerInSuspectList(Integer serverId) {
@@ -155,6 +160,14 @@ public class ServerState {
         return suspectList;
     }
 
+    public synchronized void removeServerInCountList(Integer serverId) {
+        heartbeatCountList.remove(serverId);
+    }
+
+    public ConcurrentHashMap<Integer, Integer> getHeartbeatCountList() {
+        return heartbeatCountList;
+    }
+
     public AtomicBoolean onGoingConsensus() {
         return ongoingConsensus;
     }
@@ -162,4 +175,5 @@ public class ServerState {
     public ConcurrentHashMap<String, Integer> getVoteSet() {
         return voteSet;
     }
+
 }
