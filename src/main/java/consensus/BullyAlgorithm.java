@@ -7,6 +7,7 @@ import server.Server;
 import server.ServerState;
 
 import java.io.IOException;
+import java.util.List;
 
 public class BullyAlgorithm implements Runnable{
     String operation;
@@ -134,6 +135,7 @@ public class BullyAlgorithm implements Runnable{
      * If the server has failed then a message is displayed to indicate the failure.
      */
     public static void sendCoordinatorMsg() {
+        int numberOfRequestsNotSent = 0;
         for ( int key : ServerState.getInstance().getServers().keySet() ) {
             if ( key != ServerState.getInstance().getSelfID() ){
                 Server destServer = ServerState.getInstance().getServers().get(key);
@@ -146,12 +148,28 @@ public class BullyAlgorithm implements Runnable{
                     System.out.println("INFO : Sent leader ID to s"+destServer.getServerID());
                 }
                 catch(Exception e) {
+                    numberOfRequestsNotSent += 1;
                     System.out.println("WARN : Server s"+destServer.getServerID()+
                                                " has failed, it will not receive the leader");
                 }
             }
         }
+        if( numberOfRequestsNotSent == ServerState.getInstance().getServers().size()-1 ) {
+            // add self clients and chat rooms to leader state
+            List<String> selfClients = ServerState.getInstance().getClientIdList();
+            List<List<String>> selfRooms = ServerState.getInstance().getChatRoomList();
 
+            for( String clientID : selfClients ) {
+                LeaderState.getInstance().addClientLeaderUpdate( clientID );
+            }
+
+            for( List<String> chatRoom : selfRooms ) {
+                LeaderState.getInstance().addApprovedRoom( chatRoom.get( 0 ),
+                        chatRoom.get( 1 ), Integer.parseInt(chatRoom.get( 2 )) );
+            }
+
+            leaderUpdateComplete = true;
+        }
     }
     /**
      * The sendOK() method sends OK message to the incoming server which has requested an election
