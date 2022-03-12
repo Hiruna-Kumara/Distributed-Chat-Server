@@ -26,7 +26,7 @@ public class LeaderState
             synchronized (LeaderState.class) {
                 if (leaderStateInstance == null) {
                     leaderStateInstance = new LeaderState(); //instance will be created at request time
-                    leaderStateInstance.addServerDefaultMainHalls();
+//                    leaderStateInstance.addServerDefaultMainHalls();
                 }
             }
         }
@@ -38,16 +38,33 @@ public class LeaderState
     }
 
     public boolean isLeaderElected() {
-        return BullyAlgorithm.leaderFlag;
+        return (BullyAlgorithm.leaderFlag && BullyAlgorithm.leaderUpdateComplete);
+    }
+
+    public boolean isLeaderElectedAndIamLeader() {
+        return (BullyAlgorithm.leaderFlag && ServerState.getInstance().getSelfID() == LeaderState.getInstance().getLeaderID());
+    }
+
+    public boolean isLeaderElectedAndMessageFromLeader(int serverID) {
+        return (BullyAlgorithm.leaderFlag && serverID == LeaderState.getInstance().getLeaderID());
     }
 
     public boolean isClientIDAlreadyTaken(String clientID) {
         return activeClientsList.contains(clientID);
     }
 
+    public void resetLeader() {
+        activeClientsList.clear();
+        activeChatRooms.clear();
+    }
+
     public void addClient(ClientState client) {
         activeClientsList.add(client.getClientID());
         activeChatRooms.get(client.getRoomID()).addParticipants(client);
+    }
+
+    public void addClientLeaderUpdate(String clientID) {
+        activeClientsList.add(clientID);
     }
 
     public void removeClient(String clientID, String formerRoomID) {
@@ -124,6 +141,10 @@ public class LeaderState
 
     public ArrayList<String> getRoomIDList() {
         return new ArrayList<>(this.activeChatRooms.keySet());
+    }
+
+    public List<String> getClientIDList() {
+        return this.activeClientsList;
     }
 
     //remove all rooms and clients by server ID
