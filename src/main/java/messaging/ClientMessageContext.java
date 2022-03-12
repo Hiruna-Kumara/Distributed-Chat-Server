@@ -3,6 +3,7 @@ package messaging;
 import java.util.List;
 
 public class ClientMessageContext {
+
     public enum CLIENT_MSG_TYPE {
         NEW_ID,
         LIST,//roomlist
@@ -12,7 +13,7 @@ public class ClientMessageContext {
         JOIN_ROOM,//roomchange
         BROADCAST_JOIN_ROOM,//roomchangeall
         ROUTE,
-        MOVE_JOIN,
+        SERVER_CHANGE,
         DELETE_ROOM,
         QUIT
     }
@@ -22,9 +23,9 @@ public class ClientMessageContext {
     public String clientID;
     public String roomID;
     public String formerRoomID;
-    public String newRoomID;
 
     public String currentServerID;
+    public String approvedServerID;
 
     public String body;
 
@@ -32,13 +33,13 @@ public class ClientMessageContext {
     public String isNewClientIdApproved;
     public String isNewRoomIdApproved;
     public String isDeleteRoomApproved;
+    public String isServerChangeApproved;
 
     public String targetHost;
     public String targetPort;
 
     public List<String> participantsList;
     public List<String> roomsList;
-
 
     public ClientMessageContext setMessageType(CLIENT_MSG_TYPE messageType) {
         this.messageType = messageType;
@@ -65,6 +66,11 @@ public class ClientMessageContext {
         return this;
     }
 
+    public ClientMessageContext setApprovedServerID(String approvedServerID) {
+        this.approvedServerID = approvedServerID;
+        return this;
+    }
+
     public ClientMessageContext setBody(String body) {
         this.body = body;
         return this;
@@ -82,6 +88,11 @@ public class ClientMessageContext {
 
     public ClientMessageContext setIsDeleteRoomApproved(String isDeleteRoomApproved) {
         this.isDeleteRoomApproved = isDeleteRoomApproved;
+        return this;
+    }
+
+    public ClientMessageContext setIsServerChangeApproved(String isServerChangeApproved) {
+        this.isServerChangeApproved = isServerChangeApproved;
         return this;
     }
 
