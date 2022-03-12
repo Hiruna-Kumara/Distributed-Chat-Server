@@ -1,23 +1,29 @@
 package server;
 
-import java.util.ArrayList;
+import client.ClientState;
+
 import java.util.HashMap;
-import java.util.List;
 
 public class Room {
     private final String ownerID;
     private final String roomID;
+    private final int serverID;
 
-    private final HashMap<String, ClientState> clientStateMap = new HashMap<>(); // <clientID,clientState>
+    private final HashMap<String,ClientState> clientStateMap = new HashMap<>(); // <clientID,clientState>
 
     // TODO : check sync keyword
-    public Room(String identity, String roomID) {
+    public Room(String identity, String roomID, int serverID) {
         this.ownerID = identity;
         this.roomID = roomID;
+        this.serverID = serverID;
     }
 
     public synchronized String getRoomID() {
         return roomID;
+    }
+
+    public synchronized int getServerID() {
+        return serverID;
     }
 
     public synchronized HashMap<String, ClientState> getClientStateMap() {

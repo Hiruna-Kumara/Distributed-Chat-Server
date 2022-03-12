@@ -4,6 +4,7 @@ import heartbeat.GossipJob;
 import heartbeat.ConsensusJob;
 
 import java.util.Scanner;
+import client.ClientHandlerThread;
 import consensus.BullyAlgorithm;
 
 import java.io.IOException;
@@ -16,18 +17,45 @@ import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
 
 import java.util.Arrays;
+import java.util.Arrays;
+import java.util.Scanner;
+
 
 public class Main {
     public static void main(String[] args) {
 
+        System.out.println("INFO : Enter server ID (s1)[default]:  ");
+        Scanner scanner = new Scanner(System.in);
+        String serverID = scanner.nextLine();  // Read user input
+
+        ServerState.getInstance().initializeWithConfigs(serverID, args[1]);
+
         System.out.println("LOG  : ------server started------");
 
-        ServerState.getInstance().initializeWithConfigs(args[0], args[1]);
         try {
             // throw exception if invalid server id provided
             if (ServerState.getInstance().getServerAddress() == null) {
                 throw new IllegalArgumentException();
             }
+            /**
+             Coordination socket
+             **/
+            // server socket for coordination
+            ServerSocket serverCoordinationSocket = new ServerSocket();
+
+            // bind SocketAddress with inetAddress and port
+            SocketAddress endPointCoordination = new InetSocketAddress(
+                    ServerState.getInstance().getServerAddress(),
+                    ServerState.getInstance().getCoordinationPort()
+            );
+            serverCoordinationSocket.bind(endPointCoordination);
+            System.out.println(serverCoordinationSocket.getLocalSocketAddress());
+            System.out.println("LOG  : TCP Server waiting for coordination on port " +
+                    serverCoordinationSocket.getLocalPort()); // port open for coordination
+
+            /**
+             Client socket
+             **/
 
             // server socket for clients
             ServerSocket serverClientsSocket = new ServerSocket();
@@ -40,14 +68,19 @@ public class Main {
             System.out.println(serverClientsSocket.getLocalSocketAddress());
             System.out.println("LOG  : TCP Server waiting for clients on port " +
                     serverClientsSocket.getLocalPort()); // port open for clients
+            /**
+             Handle coordination
+             **/
+            ServerHandlerThread serverHandlerThread = new ServerHandlerThread(serverCoordinationSocket);
+
+
+            // starting the thread
+            serverHandlerThread.start();
 
             /**
              * Maintain consensus using Bully Algorithm
              **/
             BullyAlgorithm.initialize();
-
-            Runnable receiver = new BullyAlgorithm("Receiver");
-            new Thread(receiver).start();
 
             Runnable heartbeat = new BullyAlgorithm("Heartbeat");
             new Thread(heartbeat).start();
@@ -68,7 +101,7 @@ public class Main {
                 Socket clientSocket = serverClientsSocket.accept();
                 ClientHandlerThread clientHandlerThread = new ClientHandlerThread(clientSocket);
                 // starting the thread
-                ServerState.getInstance().addClientHandlerThreadToList(clientHandlerThread);
+                ServerState.getInstance().addClientHandlerThreadToMap(clientHandlerThread);
                 clientHandlerThread.start();
             }
         } catch (IllegalArgumentException e) {

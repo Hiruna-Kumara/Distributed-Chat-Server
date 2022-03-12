@@ -1,4 +1,4 @@
-package server;
+package client;
 
 import java.net.Socket;
 
@@ -6,13 +6,12 @@ public class ClientState {
 
     private String clientID;
     private String roomID;
-    private Integer port;
     private Socket socket;
+    private boolean isRoomOwner = false;
 
-    public ClientState(String clientID, String roomID, Integer port, Socket socket) {
+    public ClientState(String clientID, String roomID, Socket socket) {
         this.clientID = clientID;
         this.roomID = roomID;
-        this.port = port;
         this.socket = socket;
     }
 
@@ -24,13 +23,6 @@ public class ClientState {
         this.clientID = clientID;
     }
 
-    public Integer getPort() {
-        return port;
-    }
-
-    public void setPort(Integer port) {
-        this.port = port;
-    }
 
     public String getRoomID() {
         return roomID;
@@ -46,5 +38,13 @@ public class ClientState {
 
     public void setSocket(Socket socket) {
         this.socket = socket;
+    }
+
+    public boolean isRoomOwner() {
+        return isRoomOwner;
+    }
+
+    public void setRoomOwner(boolean roomOwner) {
+        isRoomOwner = roomOwner;
     }
 }

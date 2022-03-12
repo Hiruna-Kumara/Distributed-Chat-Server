@@ -5,24 +5,16 @@ import org.json.simple.JSONObject;
 import server.Server;
 import messaging.ServerMessage;
 import server.ServerState;
+import messaging.ServerMessage;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.InetSocketAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.SocketAddress;
-import java.nio.charset.StandardCharsets;
 
 public class BullyAlgorithm implements Runnable {
     String operation;
     String reqType;
     static int sourceID = -1;
-    static boolean receivedOk = false;
-    static boolean leaderFlag = false;
-    static boolean electionInProgress = false;
-    static int okCtr = 0;
-    static long startTimeOk = -1;
+    static volatile boolean receivedOk = false;
+    static volatile boolean leaderFlag = false;
+    static volatile boolean electionInProgress = false;
 
     public BullyAlgorithm(String operation) {
         this.operation = operation;
@@ -51,22 +43,20 @@ public class BullyAlgorithm implements Runnable {
                     Thread.sleep(7000);
                     if (!receivedOk) {
                         // OK not receivedOk. Set self as leader
-                        ServerState.getInstance().setLeaderID(ServerState.getInstance().getSelfID());
+                        LeaderState.getInstance().setLeaderID(ServerState.getInstance().getSelfID());
                         electionInProgress = false; // allow another election request to come in
                         leaderFlag = true;
-                        System.out.println("INFO : Server s" + ServerState.getInstance().getLeaderID()
+                        System.out.println("INFO : Server s" + LeaderState.getInstance().getLeaderID()
                                 + " is selected as leader! ");
                         Runnable sender = new BullyAlgorithm("Sender", "coordinator");
                         new Thread(sender).start();
                     }
 
                     if (receivedOk && !leaderFlag) {
-                        System.out.println("INFO : Received OK but coordinator message was not receivedOk");
+                        System.out.println("INFO : Received OK but coordinator message was not received");
 
                         electionInProgress = false;
                         receivedOk = false;
-                        System.out.println("INFO : Election in progress = " + electionInProgress +
-                                " Received = " + receivedOk);
 
                         Runnable sender = new BullyAlgorithm("Sender", "election");
                         new Thread(sender).start();
@@ -76,111 +66,20 @@ public class BullyAlgorithm implements Runnable {
                 }
                 break;
 
-            case "TimerOk":
-                System.out.println("INFO : Inside timerOK thread");
-                while (true) {
-                    if ((!leaderFlag) && System.currentTimeMillis() - startTimeOk > (5000
-                            + 5000 * ServerState.getInstance().getNumberOfServersWithHigherIds())) {
-                        okCtr = 0;
-                        System.out.println("Higher Process Sent OK but Failed, so Start a new Election process");
-                        Runnable sender = new BullyAlgorithm("Sender", "election");
-                        new Thread(sender).start();
-                        break;
-                    }
-                }
-                break;
 
-            case "Receiver":
-                try {
-                    // server socket for coordination
-                    ServerSocket serverCoordinationSocket = new ServerSocket();
 
-                    // bind SocketAddress with inetAddress and port
-                    SocketAddress endPointCoordination = new InetSocketAddress(
-                            ServerState.getInstance().getServerAddress(),
-                            ServerState.getInstance().getCoordinationPort());
-                    serverCoordinationSocket.bind(endPointCoordination);
-                    System.out.println(serverCoordinationSocket.getLocalSocketAddress());
-                    System.out.println("LOG  : TCP Server waiting for coordination on port " +
-                            serverCoordinationSocket.getLocalPort()); // port open for coordination
-
-                    while (true) {
-                        Socket serverSocket = serverCoordinationSocket.accept();
-
-                        BufferedReader bufferedReader = new BufferedReader(
-                                new InputStreamReader(serverSocket.getInputStream(), StandardCharsets.UTF_8));
-                        String jsonStringFromServer = bufferedReader.readLine();
-
-                        // convert received message to json object
-                        JSONObject j_object = MessageTransfer.convertToJson(jsonStringFromServer);
-
-                        if (MessageTransfer.hasKey(j_object, "option")) {
-                            String option = j_object.get("option").toString();
-                            switch (option) {
-                                case "election":
-                                    // {"option": "election", "source": 1}
-                                    sourceID = Integer.parseInt(j_object.get("source").toString());
-                                    System.out.println("INFO : Received election request from s" + sourceID);
-
-                                    if (ServerState.getInstance().getSelfID() > sourceID) {
-                                        Runnable sender = new BullyAlgorithm("Sender", "ok");
-                                        new Thread(sender).start();
-                                    }
-                                    if (!electionInProgress) {
-                                        Runnable sender = new BullyAlgorithm("Sender", "election");
-                                        new Thread(sender).start();
-                                        // startTime = System.currentTimeMillis();
-                                        electionInProgress = true;
-
-                                        Runnable timer = new BullyAlgorithm("Timer");
-                                        new Thread(timer).start();
-                                        System.out.println("INFO : Election started");
-                                    }
-                                    break;
-                                case "ok": {
-                                    // {"option": "ok", "sender": 1}
-                                    receivedOk = true;
-                                    int senderID = Integer.parseInt(j_object.get("sender").toString());
-                                    System.out.println("INFO : Received OK from s" + senderID);
-                                    break;
-                                }
-                                case "coordinator":
-                                    // {"option": "coordinator", "leader": 1}
-                                    ServerState.getInstance().setLeaderID(
-                                            Integer.parseInt(j_object.get("leader").toString()));
-                                    leaderFlag = true;
-                                    electionInProgress = false;
-                                    receivedOk = false;
-                                    System.out.println("INFO : Leader selected is s" +
-                                            ServerState.getInstance().getLeaderID());
-                                    break;
-                                case "heartbeat": {
-                                    // {"option": "heartbeat", "sender": 1}
-                                    int senderID = Integer.parseInt(j_object.get("sender").toString());
-                                    System.out.println("INFO : Heartbeat received from s" + senderID);
-                                    break;
-                                }
-                            }
-                        } else {
-                            System.out.println("WARN : Command error, Corrupted JSON from Server");
-                        }
-                        serverSocket.close();
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                break;
 
             case "Heartbeat":
                 while (true) {
                     try {
+                        Thread.sleep(10);
                         if (leaderFlag
-                                && ServerState.getInstance().getSelfID() != ServerState.getInstance().getLeaderID()) {
+                                && ServerState.getInstance().getSelfID() != LeaderState.getInstance().getLeaderID()) {
                             Thread.sleep(1500);
                             Server destServer = ServerState.getInstance().getServers()
-                                    .get(ServerState.getInstance().getLeaderID());
+                                    .get(LeaderState.getInstance().getLeaderID());
 
-                            MessageTransfer.send(
+                            MessageTransfer.sendServer(
                                     ServerMessage.getHeartbeat(String.valueOf(ServerState.getInstance().getSelfID())),
                                     destServer);
                             System.out.println("INFO : Sent heartbeat to leader s" + destServer.getServerID());
@@ -204,7 +103,7 @@ public class BullyAlgorithm implements Runnable {
                         try {
                             sendElectionRequest();
                         } catch (Exception e) {
-                            System.out.println("WARN : Servers has failed, election request cannot be processed");
+                            System.out.println("WARN : Server has failed, election request cannot be processed");
                         }
                         break;
 
@@ -217,7 +116,11 @@ public class BullyAlgorithm implements Runnable {
                         break;
 
                     case "coordinator":
-                        sendCoordinatorMsg();
+                        try{
+                            sendCoordinatorMsg();
+                        }catch(Exception e){
+                            e.printStackTrace();
+                        }
                         break;
                 }
                 break;
@@ -234,12 +137,12 @@ public class BullyAlgorithm implements Runnable {
                 Server destServer = ServerState.getInstance().getServers().get(key);
 
                 try {
-                    MessageTransfer.send(
+                    MessageTransfer.sendServer(
                             ServerMessage.getCoordinator(String.valueOf(ServerState.getInstance().getSelfID())),
                             destServer);
                     System.out.println("INFO : Sent leader ID to s" + destServer.getServerID());
                 } catch (Exception e) {
-                    System.out.println("WARN : The server s" + destServer.getServerID() +
+                    System.out.println("WARN : Server s" + destServer.getServerID() +
                             " has failed, it will not receive the leader");
                 }
             }
@@ -254,12 +157,12 @@ public class BullyAlgorithm implements Runnable {
     public static void sendOK() {
         try {
             Server destServer = ServerState.getInstance().getServers().get(sourceID);
-            MessageTransfer.send(
+            MessageTransfer.sendServer(
                     ServerMessage.getOk(String.valueOf(ServerState.getInstance().getSelfID())),
                     destServer);
             System.out.println("INFO : Sent OK to s" + destServer.getServerID());
         } catch (Exception e) {
-            System.out.println("INFO : Server s" + sourceID + " has failed. OK message cannot be sent");
+//            System.out.println("INFO : Server s" + sourceID + " has failed. OK message cannot be sent");
         }
     }
 
@@ -274,12 +177,12 @@ public class BullyAlgorithm implements Runnable {
             if (key > ServerState.getInstance().getSelfID()) {
                 Server destServer = ServerState.getInstance().getServers().get(key);
                 try {
-                    MessageTransfer.send(
+                    MessageTransfer.sendServer(
                             ServerMessage.getElection(String.valueOf(ServerState.getInstance().getSelfID())),
                             destServer);
                     System.out.println("INFO : Sent election request to s" + destServer.getServerID());
                 } catch (Exception e) {
-                    System.out.println("WARN : The server s" + destServer.getServerID() +
+                    System.out.println("WARN : Server s" + destServer.getServerID() +
                             " has failed, cannot send election request");
                     numberOfFailedRequests++;
                 }
@@ -296,6 +199,57 @@ public class BullyAlgorithm implements Runnable {
             }
         }
     }
+    //receive message
+
+    public static void receiveMessages(JSONObject j_object) {
+        String option = j_object.get( "option" ).toString();
+        switch( option ) {
+            case "election":
+                // {"option": "election", "source": 1}
+                sourceID = Integer.parseInt(j_object.get( "source" ).toString());
+                System.out.println( "INFO : Received election request from s" + sourceID );
+
+                if( ServerState.getInstance().getSelfID() > sourceID ) {
+                    Runnable sender = new BullyAlgorithm( "Sender", "ok" );
+                    new Thread( sender ).start();
+                }
+                if( !electionInProgress ) {
+                    Runnable sender = new BullyAlgorithm( "Sender", "election" );
+                    new Thread( sender ).start();
+                    //startTime = System.currentTimeMillis();
+                    electionInProgress = true;
+
+                    Runnable timer = new BullyAlgorithm( "Timer" );
+                    new Thread( timer ).start();
+                    System.out.println( "INFO : Election started");
+                }
+                break;
+            case "ok": {
+                // {"option": "ok", "sender": 1}
+                receivedOk = true;
+                int senderID = Integer.parseInt(j_object.get( "sender" ).toString());
+                System.out.println( "INFO : Received OK from s" + senderID );
+                break;
+            }
+            case "coordinator":
+                // {"option": "coordinator", "leader": 1}
+                LeaderState.getInstance().setLeaderID(
+                        Integer.parseInt(j_object.get( "leader" ).toString()) );
+                leaderFlag = true;
+                electionInProgress = false;
+                receivedOk = false;
+                System.out.println(  "INFO : Server s" + LeaderState.getInstance().getLeaderID()
+                        + " is selected as leader! " );
+                break;
+            case "heartbeat": {
+                // {"option": "heartbeat", "sender": 1}
+                int senderID = Integer.parseInt(j_object.get( "sender" ).toString());
+//                System.out.println( "INFO : Heartbeat received from s" + senderID );
+                break;
+            }
+        }
+    }
+
 
     /**
      * The initialize() method makes a newly started or recovered server
