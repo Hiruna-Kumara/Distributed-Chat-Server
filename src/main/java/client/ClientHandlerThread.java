@@ -34,6 +34,7 @@ public class ClientHandlerThread extends Thread {
 
     private List<String> roomsListTemp;
 
+    private  int approvedRoomDeletion = -1;
     final Object lock;
 
     private boolean quitFlag = false;
@@ -42,11 +43,6 @@ public class ClientHandlerThread extends Thread {
         String serverID = ServerState.getInstance().getServerID();
         this.clientSocket = clientSocket;
         this.lock = new Object();
-    }
-
-    public String getClientId()
-    {
-        return clientState.getClientID();
     }
 
     public void setApprovedClientID( int approvedClientID ) {
@@ -121,7 +117,7 @@ public class ClientHandlerThread extends Thread {
     {
         if (checkID(clientID)) {
             // busy wait until leader is elected
-            while(!LeaderState.getInstance().isLeaderElected()) {
+            while(!LeaderState.getInstance().isLeaderElected()) { // TODO: any better way to do this?
                 Thread.sleep(1000);
             }
             synchronized( lock ) {
