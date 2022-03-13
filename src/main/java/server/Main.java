@@ -23,11 +23,8 @@ import java.util.Scanner;
 public class Main {
     public static void main(String[] args) {
 
-        System.out.println("INFO : Enter server ID (s1)[default]:  ");
-        Scanner scanner = new Scanner(System.in);
-        String serverID = scanner.nextLine();  // Read user input
-
-        ServerState.getInstance().initializeWithConfigs(serverID, args[1]);
+        System.out.println("LOG  : ARG[0] = " + args[0] + " ARG[1] = '" + args[1] + "'");
+        ServerState.getInstance().initializeWithConfigs(args[0], args[1]);
 
         System.out.println("LOG  : ------server started------");
 
@@ -103,12 +100,15 @@ public class Main {
                 ServerState.getInstance().addClientHandlerThreadToMap( clientHandlerThread );
                 clientHandlerThread.start();
             }
-        } catch (IllegalArgumentException e) {
+        }
+        catch( IllegalArgumentException e ) {
             System.out.println("ERROR : invalid server ID");
-        } catch (IndexOutOfBoundsException e) {
+        }
+        catch ( IndexOutOfBoundsException e) {
             System.out.println("ERROR : server arguments not provided");
             e.printStackTrace();
-        } catch (IOException e) {
+        }
+        catch ( IOException e) {
             System.out.println("ERROR : occurred in main " + Arrays.toString(e.getStackTrace()));
         }
     }
