@@ -12,6 +12,7 @@ import messaging.ClientMessage;
 
 import java.io.*;
 import java.net.Socket;
+import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,6 +36,8 @@ public class ClientHandlerThread extends Thread {
 
     private  int approvedRoomDeletion = -1;
     final Object lock;
+
+    private boolean quitFlag = false;
 
     public ClientHandlerThread(Socket clientSocket) {
         String serverID = ServerState.getInstance().getServerID();
@@ -498,7 +501,7 @@ public class ClientHandlerThread extends Thread {
                 //server change : route
                 messageSend(SocketList,  msgCtx.setMessageType(CLIENT_MSG_TYPE.ROUTE));
                 System.out.println("INFO : Route Message Sent to Client");
-
+                quitFlag = true;
 
             } else if (approvedJoinRoom == 0) { // Room not found on system
                 ClientMessageContext msgCtx = new ClientMessageContext()
@@ -644,86 +647,44 @@ public class ClientHandlerThread extends Thread {
     }
 
     //quit room
-    private void quit() throws IOException {
+    private void quit() throws IOException, InterruptedException {
 
+        //delete room if room owner
+        if (clientState.isRoomOwner()){
+            deleteRoom(clientState.getRoomID());
+            System.out.println("INFO : Deleted room before " + clientState.getClientID() + " quit");
+        }
+
+        //send broadcast with empty target room for quit
+        HashMap<String,ClientState> formerClientList = ServerState.getInstance().getRoomMap().get(clientState.getRoomID()).getClientStateMap();
+
+        ArrayList<Socket> socketList = new ArrayList<>();
+        for (String each:formerClientList.keySet()){
+            socketList.add(formerClientList.get(each).getSocket());
+        }
+        ClientMessageContext msgCtx = new ClientMessageContext()
+                                .setClientID(clientState.getClientID())
+                                .setRoomID("")
+                                .setFormerRoomID(clientState.getRoomID());
+        messageSend(socketList, msgCtx.setMessageType(CLIENT_MSG_TYPE.BROADCAST_JOIN_ROOM));
+
+        //update Local Server
+        ServerState.getInstance().getRoomMap().get(clientState.getRoomID()).removeParticipants(clientState.getClientID());
+
+        // Update global list of Leader
         // send quit message to leader if self is not leader
         if( !LeaderState.getInstance().isLeader() ) {
             MessageTransfer.sendToLeader(
                     ServerMessage.getQuit(clientState.getClientID(), clientState.getRoomID())
             );
         } else {
-            // leader removes client
+            // Leader is self , removes client from global list
             LeaderState.getInstance().removeClient(clientState.getClientID(),clientState.getRoomID() );
         }
 
-        String roomID = clientState.getRoomID();
-        String mainHallRoomID = ServerState.getInstance().getMainHall().getRoomID();
-
-        if (ServerState.getInstance().getRoomMap().containsKey(roomID)) {
-
-            Room room = ServerState.getInstance().getRoomMap().get(roomID);
-
-            //create broadcast list
-            HashMap<String,ClientState> formerClientList = ServerState.getInstance().getRoomMap().get(roomID).getClientStateMap();
-            HashMap<String,ClientState> mainHallClientList = ServerState.getInstance().getRoomMap().get(mainHallRoomID).getClientStateMap();
-            mainHallClientList.putAll(formerClientList);
-
-            ArrayList<Socket> socketList = new ArrayList<>();
-            for (String each:mainHallClientList.keySet()){
-                socketList.add(mainHallClientList.get(each).getSocket());
-            }
-
-            if (room.getOwnerIdentity().equals(clientState.getClientID())) {
-
-                ServerState.getInstance().getRoomMap().remove(roomID);
-
-                for(String clientID:formerClientList.keySet()){
-                    if (clientState.getClientID().equals(clientID)){
-                        ClientMessageContext msgCtx = new ClientMessageContext()
-                                .setClientID(clientID)
-                                .setRoomID(mainHallRoomID)
-                                .setFormerRoomID("");
-                        messageSend(socketList, msgCtx.setMessageType(CLIENT_MSG_TYPE.BROADCAST_JOIN_ROOM));
-                    } else{
-                        formerClientList.get(clientID).setRoomID(mainHallRoomID);
-                        ServerState.getInstance().getRoomMap().get(mainHallRoomID).addParticipants(formerClientList.get(clientID));
-
-                        ClientMessageContext msgCtx = new ClientMessageContext()
-                                .setClientID(clientID)
-                                .setRoomID(mainHallRoomID)
-                                .setFormerRoomID(roomID);
-                        messageSend(socketList, msgCtx.setMessageType(CLIENT_MSG_TYPE.BROADCAST_JOIN_ROOM));
-                    }
-                }
-
-                ClientMessageContext msgCtx = new ClientMessageContext()
-                        .setRoomID(roomID)
-                        .setIsDeleteRoomApproved("true");
-
-                messageSend(socketList, msgCtx.setMessageType(CLIENT_MSG_TYPE.DELETE_ROOM));
-
-                System.out.println("INFO : "+ clientState.getClientID()+ " quit");
-
-            } else {
-                ClientMessageContext msgCtx = new ClientMessageContext()
-                        .setClientID(clientState.getClientID())
-                        .setRoomID("") //exit
-                        .setFormerRoomID(roomID)
-                        .setIsDeleteRoomApproved("true");
-
-                ServerState.getInstance().getRoomMap().get(roomID).removeParticipants(clientState.getClientID());
-                messageSend(socketList, msgCtx.setMessageType(CLIENT_MSG_TYPE.BROADCAST_JOIN_ROOM));
-
-                System.out.println("INFO : "+ clientState.getClientID()+ " is quit");
-            }
-        } else {
-            ClientMessageContext msgCtx = new ClientMessageContext()
-                    .setRoomID(roomID)
-                    .setIsDeleteRoomApproved("false");
-
-            messageSend(null, msgCtx.setMessageType(CLIENT_MSG_TYPE.DELETE_ROOM));
-            System.out.println("WARN : Received room ID [" + roomID + "] does not exist");
-        }
+        if (!clientSocket.isClosed()) clientSocket.close();
+        quitFlag = true;
+        System.out.println("INFO : " + clientState.getClientID() + " quit");
     }
 
     //message
@@ -757,11 +718,11 @@ public class ClientHandlerThread extends Thread {
             BufferedReader bufferedReader = new BufferedReader(
                     new InputStreamReader(clientSocket.getInputStream(), StandardCharsets.UTF_8));
 
-            while (true) {
+            while (!quitFlag) {
 
-                String jsonStringFromClient = bufferedReader.readLine();
 
                 try {
+                    String jsonStringFromClient = bufferedReader.readLine();
 
                     if (jsonStringFromClient==null){
                         continue;
@@ -814,17 +775,18 @@ public class ClientHandlerThread extends Thread {
                         System.out.println("WARN : Command error, Corrupted JSON");
                     }
 
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }  catch (InterruptedException e) {
-                    e.printStackTrace();
+                } catch (ParseException | InterruptedException | SocketException e) {
+                    quit();
+                    //e.printStackTrace();
+                    System.out.println("WARN : " + clientState.getClientID() + " forced quit on exception : " + e.getMessage());
                 }
             }
 
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException | InterruptedException e) {
+            //e.printStackTrace();
+            System.out.println("WARN : unhandled quit state exception : " + e.getMessage());
         }
-
+        System.out.println("INFO : " + clientState.getClientID() + " Thread terminated");
     }
 
 }
