@@ -104,9 +104,9 @@ public class ServerState {
     // used for updating leader client list when newly elected
     public List<String> getClientIdList() {
         List<String> clientIdList = new ArrayList<>();
-        for (ClientHandlerThread clientHandlerThread: clientHandlerThreadMap.values()) {
-            clientIdList.add( clientHandlerThread.getClientId() );
-        }
+        roomMap.forEach((roomID, room) -> {
+            clientIdList.addAll(room.getClientStateMap().keySet());
+        });
         return clientIdList;
     }
 
