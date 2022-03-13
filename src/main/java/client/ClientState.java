@@ -23,7 +23,6 @@ public class ClientState {
         this.clientID = clientID;
     }
 
-
     public String getRoomID() {
         return roomID;
     }
@@ -40,11 +39,13 @@ public class ClientState {
         this.socket = socket;
     }
 
-    public boolean isRoomOwner() {
+    public boolean isRoomOwner()
+    {
         return isRoomOwner;
     }
 
-    public void setRoomOwner(boolean roomOwner) {
+    public void setRoomOwner( boolean roomOwner )
+    {
         isRoomOwner = roomOwner;
     }
 }
