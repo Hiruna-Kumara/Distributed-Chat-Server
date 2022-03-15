@@ -1,10 +1,11 @@
-package server;
+package messaging;
 
 import org.json.simple.JSONObject;
 
 import java.util.*;
 
-public class ServerMessage {
+public class ClientMessage
+{
 
     @SuppressWarnings("unchecked")
     public static JSONObject getApprovalNewID(String approve) {
@@ -26,6 +27,25 @@ public class ServerMessage {
         jsonObject.put("identity", clientID);
         jsonObject.put("former", formerRoomID);
         jsonObject.put("roomid", roomID);
+        return jsonObject;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static JSONObject getRoute(String roomID, String host, String port) {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("type", "route");
+        jsonObject.put("roomid", roomID);
+        jsonObject.put("host", host);
+        jsonObject.put("port", port);
+        return jsonObject;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static JSONObject getServerChange(String approved, String serverid) {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("type", "serverchange");
+        jsonObject.put("approved", approved);
+        jsonObject.put("serverid", serverid);
         return jsonObject;
     }
 
@@ -79,40 +99,8 @@ public class ServerMessage {
     public static JSONObject getMessage(String id, String content) {
         JSONObject join = new JSONObject();
         join.put("type", "message");
-        join.put("identity", id);
-        join.put("content", content);
+        join.put("identity",id);
+        join.put("content",content);
         return join;
-    }
-
-    @SuppressWarnings("unchecked")
-    public static JSONObject getHeartbeat(String sender) {
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("option", "heartbeat");
-        jsonObject.put("sender", sender);
-        return jsonObject;
-    }
-
-    @SuppressWarnings("unchecked")
-    public static JSONObject getElection(String source) {
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("option", "election");
-        jsonObject.put("source", source);
-        return jsonObject;
-    }
-
-    @SuppressWarnings("unchecked")
-    public static JSONObject getCoordinator(String leader) {
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("option", "coordinator");
-        jsonObject.put("leader", leader);
-        return jsonObject;
-    }
-
-    @SuppressWarnings("unchecked")
-    public static JSONObject getOk(String sender) {
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("option", "ok");
-        jsonObject.put("sender", sender);
-        return jsonObject;
     }
 }
