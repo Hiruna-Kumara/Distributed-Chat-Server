@@ -4,9 +4,8 @@ import java.io.*;
 
 import client.ClientHandlerThread;
 import client.ClientState;
-import consensus.BullyAlgorithm;
 import consensus.LeaderState;
-import consensus.LeaderStateUpdate;
+import consensus.election.FastBullyAlgorithm;
 import messaging.MessageTransfer;
 import messaging.ServerMessage;
 import org.json.simple.JSONArray;
@@ -18,14 +17,30 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.List;
 
 public class ServerHandlerThread extends Thread {
 
     private final ServerSocket serverCoordinationSocket;
-    private LeaderStateUpdate leaderStateUpdate = new LeaderStateUpdate();
 
     public ServerHandlerThread(ServerSocket serverCoordinationSocket) {
         this.serverCoordinationSocket = serverCoordinationSocket;
+    }
+
+    private void sendToLeaderUpdate(String serverID, JSONArray clientIDListJson, JSONArray chatRoomsListJson) {
+        List<String> clientIDList = new ArrayList<>();
+        List<Room> roomList = new ArrayList<>();
+
+        for (Object clientID : clientIDListJson) {
+            clientIDList.add(clientID.toString());
+        }
+
+        for (Object chatRoom : chatRoomsListJson) {
+            JSONObject j_room = (JSONObject) chatRoom;
+            roomList.add(new Room(j_room.get("clientID").toString(), j_room.get("roomID").toString(),
+                    (int) j_room.get("serverID")));
+        }
+        LeaderState.getInstance().handleRequest(serverID, clientIDList, roomList);
     }
 
     @Override
@@ -34,20 +49,23 @@ public class ServerHandlerThread extends Thread {
             while (true) {
                 Socket serverSocket = serverCoordinationSocket.accept();
                 BufferedReader bufferedReader = new BufferedReader(
-                        new InputStreamReader(serverSocket.getInputStream(), StandardCharsets.UTF_8)
-                );
+                        new InputStreamReader(serverSocket.getInputStream(), StandardCharsets.UTF_8));
                 String jsonStringFromServer = bufferedReader.readLine();
 
                 // convert received message to json object
                 JSONObject j_object = MessageTransfer.convertToJson(jsonStringFromServer);
 
-
                 if (MessageTransfer.hasKey(j_object, "option")) {
                     // messages with 'option' tag will be handled inside BullyAlgorithm
-                    BullyAlgorithm.receiveMessages(j_object);
+                    FastBullyAlgorithm.receiveMessage(j_object);
                 } else if (MessageTransfer.hasKey(j_object, "type")) {
-
-                    if (j_object.get("type").equals("clientidapprovalrequest")
+                    if (j_object.get("type").equals("leaderupdate")) {
+                        String serverID = (String) j_object.get("serverID");
+                        JSONArray clientIDListJson = (JSONArray) j_object.get("clients");
+                        JSONArray chatRoomsListJson = (JSONArray) j_object.get("chatrooms");
+                        // System.out.println(chatRoomsList);
+                        sendToLeaderUpdate(serverID, clientIDListJson, chatRoomsListJson);
+                    } else if (j_object.get("type").equals("clientidapprovalrequest")
                             && j_object.get("clientid") != null && j_object.get("sender") != null
                             && j_object.get("threadid") != null) {
 
@@ -63,14 +81,13 @@ public class ServerHandlerThread extends Thread {
                                     null);
                             LeaderState.getInstance().addClient(clientState);
                         }
-                        Server destServer = ServerState.getInstance().getServers()
+                        Server destServer = ServerState.getInstance().getOtherServers()
                                 .get(sender);
                         try {
                             // send client id approval reply to sender
                             MessageTransfer.sendServer(
                                     ServerMessage.getClientIdApprovalReply(String.valueOf(approved), threadID),
-                                    destServer
-                            );
+                                    destServer);
                             System.out.println("INFO : Client ID '" + clientID +
                                     "' from s" + sender + " is" + (approved ? " " : " not ") + "approved");
                         } catch (Exception e) {
@@ -105,14 +122,13 @@ public class ServerHandlerThread extends Thread {
                         if (approved) {
                             LeaderState.getInstance().addApprovedRoom(clientID, roomID, sender);
                         }
-                        Server destServer = ServerState.getInstance().getServers()
+                        Server destServer = ServerState.getInstance().getOtherServers()
                                 .get(sender);
                         try {
                             // send room create approval reply to sender
                             MessageTransfer.sendServer(
                                     ServerMessage.getRoomCreateApprovalReply(String.valueOf(approved), threadID),
-                                    destServer
-                            );
+                                    destServer);
                             System.out.println("INFO : Room '" + roomID +
                                     "' creation request from client " + clientID +
                                     " is" + (approved ? " " : " not ") + "approved");
@@ -137,7 +153,7 @@ public class ServerHandlerThread extends Thread {
 
                         // leader processes join room approval request received
 
-                        //get params
+                        // get params
                         String clientID = j_object.get("clientid").toString();
                         String roomID = j_object.get("roomid").toString();
                         String formerRoomID = j_object.get("former").toString();
@@ -146,20 +162,23 @@ public class ServerHandlerThread extends Thread {
                         boolean isLocalRoomChange = Boolean.parseBoolean(j_object.get("isLocalRoomChange").toString());
 
                         if (isLocalRoomChange) {
-                            //local change update leader
+                            // local change update leader
                             ClientState clientState = new ClientState(clientID, roomID, null);
                             LeaderState.getInstance().localJoinRoomClient(clientState, formerRoomID);
                         } else {
                             int serverIDofTargetRoom = LeaderState.getInstance().getServerIdIfRoomExist(roomID);
 
-                            Server destServer = ServerState.getInstance().getServers().get(sender);
+                            Server destServer = ServerState.getInstance().getOtherServers().get(sender);
                             try {
 
                                 boolean approved = serverIDofTargetRoom != -1;
                                 if (approved) {
-                                    LeaderState.getInstance().removeClient(clientID, formerRoomID);//remove before route, later add on move join
+                                    LeaderState.getInstance().removeClient(clientID, formerRoomID);// remove before
+                                                                                                   // route, later add
+                                                                                                   // on move join
                                 }
-                                Server serverOfTargetRoom = ServerState.getInstance().getServers().get(serverIDofTargetRoom);
+                                Server serverOfTargetRoom = ServerState.getInstance().getOtherServers()
+                                        .get(serverIDofTargetRoom);
 
                                 String host = (approved) ? serverOfTargetRoom.getServerAddress() : "";
                                 String port = (approved) ? String.valueOf(serverOfTargetRoom.getClientsPort()) : "";
@@ -168,8 +187,7 @@ public class ServerHandlerThread extends Thread {
                                         ServerMessage.getJoinRoomApprovalReply(
                                                 String.valueOf(approved),
                                                 threadID, host, port),
-                                        destServer
-                                );
+                                        destServer);
                                 System.out.println("INFO : Join Room from [" + formerRoomID +
                                         "] to [" + roomID + "] for client " + clientID +
                                         " is" + (serverIDofTargetRoom != -1 ? " " : " not ") + "approved");
@@ -197,10 +215,31 @@ public class ServerHandlerThread extends Thread {
                             lock.notifyAll();
                         }
 
-                    } else if (j_object.get("type").equals("movejoinack")) {
-                        //leader process move join acknowledgement from the target room server after change
+                    } else if (j_object.get("type").equals("movejoinrequest")) {
+                        // leader process move join acknowledgement from the target room server after
+                        // change
 
-                        //parse params
+                        // parse params
+                        String clientID = j_object.get("clientid").toString();
+                        String roomID = j_object.get("roomid").toString();
+                        String serverID = j_object.get("serverID").toString();
+                        String threadID = j_object.get("threadid").toString();
+
+                        ClientState clientState = new ClientState(clientID,
+                                ServerState.getMainHallIDbyServerInt(Integer.parseInt(serverID)),
+                                null);
+                        LeaderState.getInstance().addClient(clientState);
+
+                        // LeaderState.getInstance().addToGlobalClientAndRoomList(clientID, serverID,
+                        // roomID);
+
+                        System.out.println("INFO : Moved Client [" + clientID + "] to server s" + serverID
+                                + " and room [" + roomID + "] is updated as current room");
+                    } else if (j_object.get("type").equals("movejoinack")) {
+                        // leader process move join acknowledgement from the target room server after
+                        // change
+
+                        // parse params
                         String clientID = j_object.get("clientid").toString();
                         String roomID = j_object.get("roomid").toString();
                         String formerRoomID = j_object.get("former").toString();
@@ -213,19 +252,18 @@ public class ServerHandlerThread extends Thread {
                         System.out.println("INFO : Moved Client [" + clientID + "] to server s" + sender
                                 + " and room [" + roomID + "] is updated as current room");
                     } else if (j_object.get("type").equals("listrequest")) {
-                        //leader process list request
+                        // leader process list request
 
-                        //parse params
+                        // parse params
                         String clientID = j_object.get("clientid").toString();
                         String threadID = j_object.get("threadid").toString();
                         int sender = Integer.parseInt(j_object.get("sender").toString());
 
-                        Server destServer = ServerState.getInstance().getServers().get(sender);
+                        Server destServer = ServerState.getInstance().getOtherServers().get(sender);
 
                         MessageTransfer.sendServer(
                                 ServerMessage.getListResponse(LeaderState.getInstance().getRoomIDList(), threadID),
-                                destServer
-                        );
+                                destServer);
                     } else if (j_object.get("type").equals("listresponse")) {
 
                         Long threadID = Long.parseLong(j_object.get("threadid").toString());
@@ -255,24 +293,26 @@ public class ServerHandlerThread extends Thread {
                         LeaderState.getInstance().removeClient(clientID, formerRoomID);
                         System.out.println("INFO : Client '" + clientID + "' deleted by leader");
 
-                    } else if (j_object.get("type").equals("leaderstateupdate")) {
-                        if( LeaderState.getInstance().isLeaderElectedAndIamLeader() )
-                        {
-                            if( !leaderStateUpdate.isAlive() )
-                            {
-                                leaderStateUpdate = new LeaderStateUpdate();
-                                leaderStateUpdate.start();
-                            }
-                            leaderStateUpdate.receiveUpdate( j_object );
-                        }
+                        // } else if (j_object.get("type").equals("leaderstateupdate")) {
+                        // if (LeaderState.getInstance().isLeaderElectedAndIamLeader()) {
+                        // if (!leaderStateUpdate.isAlive()) {
+                        // leaderStateUpdate = new LeaderStateUpdate();
+                        // leaderStateUpdate.start();
+                        // }
+                        // leaderStateUpdate.receiveUpdate(j_object);
+                        // }
 
                     } else if (j_object.get("type").equals("leaderstateupdatecomplete")) {
                         int serverID = Integer.parseInt(j_object.get("serverid").toString());
-                        if( LeaderState.getInstance().isLeaderElectedAndMessageFromLeader( serverID ) )
-                        {
-                            System.out.println("INFO : Received leader update complete message from s"+serverID);
-                            BullyAlgorithm.leaderUpdateComplete = true;
-                        }
+                        System.out.println("INFO : leader server " + serverID + " update done");
+                        // if( LeaderState.getInstance().isLeaderElectedAndMessageFromLeader( serverID )
+                        // )
+                        // {
+                        // System.out.println("INFO : Received leader update complete message from
+                        // s"+serverID);
+                        // BullyAlgorithm.leaderUpdateComplete = true;
+                        // }
+                        ServerState.getInstance().setLeaderUpdateComplete(true);
 
                     } else if (j_object.get("type").equals("gossip")) {
                         GossipJob.receiveMessages(j_object);

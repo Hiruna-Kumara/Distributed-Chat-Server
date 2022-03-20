@@ -3,24 +3,26 @@ package messaging;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
+import server.Room;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class ServerMessage
-{
+public class ServerMessage {
     private static ServerMessage instance = null;
 
     private ServerMessage() {
     }
 
     public static synchronized ServerMessage getInstance() {
-        if (instance == null) instance = new ServerMessage();
+        if (instance == null)
+            instance = new ServerMessage();
         return instance;
     }
 
     @SuppressWarnings("unchecked")
-    public static JSONObject getHeartbeat( String sender) {
+    public static JSONObject getHeartbeat(String sender) {
         // {"option": "heartbeat", "sender": "s1"}
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("option", "heartbeat");
@@ -34,6 +36,82 @@ public class ServerMessage
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("option", "election");
         jsonObject.put("source", source);
+        return jsonObject;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static JSONObject answerMessage(String serverID) {
+        // {"option": "ok", "sender": "s1"}
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("option", "answer");
+        jsonObject.put("serverID", serverID);
+        return jsonObject;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static JSONObject nominationMessage() {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("option", "nomination");
+        return jsonObject;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static JSONObject setCoordinatorMessage(String serverID, String address, Integer serverPort,
+            Integer clientPort) {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("option", "coordinator");
+        jsonObject.put("serverID", serverID);
+        jsonObject.put("address", address);
+        jsonObject.put("serverPort", serverPort);
+        jsonObject.put("clientPort", clientPort);
+        return jsonObject;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static JSONObject iAmUpMessage(String serverID, String address, Integer serverPort, Integer clientPort) {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("option", "IamUp");
+        jsonObject.put("serverID", serverID);
+        jsonObject.put("address", address);
+        jsonObject.put("serverPort", serverPort);
+        jsonObject.put("clientPort", clientPort);
+        return jsonObject;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static JSONObject viewMessage(String serverID, String address, Integer serverPort, Integer clientPort) {
+        // {"type":"viewelection", "currentcoordinatorid":"1",
+        // "currentcoordinatoraddress":"localhost",
+        // "currentcoordinatorport":"4444", "currentcoordinatormanagementport":"5555"}
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("option", "view");
+        jsonObject.put("serverID", serverID);
+        jsonObject.put("address", address);
+        jsonObject.put("serverPort", serverPort);
+        jsonObject.put("clientPort", clientPort);
+        return jsonObject;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static JSONObject leaderUpdate(String serverID, List<String> clientIDList, List<Room> roomList) {
+        JSONArray clients = new JSONArray();
+        clients.addAll(clientIDList);
+
+        JSONArray chatRooms = new JSONArray();
+        for (Room room : roomList) {
+            // {"clientid" : "Adel", "roomid" : "jokes", "serverid" : "s1"}
+            JSONObject chatRoom = new JSONObject();
+            chatRoom.put("clientID", room.getRoomID());
+            chatRoom.put("roomID", room.getRoomID());
+            chatRoom.put("serverID", room.getServerID());
+            chatRooms.add(chatRoom);
+        }
+
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("type", "leaderupdate");
+        jsonObject.put("serverID", serverID);
+        jsonObject.put("clients", clients);
+        jsonObject.put("chatrooms", chatRooms);
         return jsonObject;
     }
 
@@ -56,21 +134,22 @@ public class ServerMessage
     }
 
     @SuppressWarnings("unchecked")
-    public static JSONObject getLeaderStateUpdate( List<String> clientIdList, List<List<String>> chatRoomList) {
-    // { "type": "leaderstateupdate", "clients": ["Adel", "John", "Daphne"],
-        // "chatrooms": [{"clientid" : "Adel", "roomid" : "jokes", "serverid" : "s1"}, ..] }
+    public static JSONObject getLeaderStateUpdate(List<String> clientIdList, List<List<String>> chatRoomList) {
+        // { "type": "leaderstateupdate", "clients": ["Adel", "John", "Daphne"],
+        // "chatrooms": [{"clientid" : "Adel", "roomid" : "jokes", "serverid" : "s1"},
+        // ..] }
 
         JSONArray clients = new JSONArray();
-        clients.addAll( clientIdList );
+        clients.addAll(clientIdList);
 
         JSONArray chatRooms = new JSONArray();
-        for( List<String> chatRoomObj : chatRoomList ) {
+        for (List<String> chatRoomObj : chatRoomList) {
             // {"clientid" : "Adel", "roomid" : "jokes", "serverid" : "s1"}
             JSONObject chatRoom = new JSONObject();
-            chatRoom.put( "clientid", chatRoomObj.get( 0 ) );
-            chatRoom.put( "roomid", chatRoomObj.get( 1 ) );
-            chatRoom.put( "serverid", chatRoomObj.get( 2 ) );
-            chatRooms.add( chatRoom );
+            chatRoom.put("clientid", chatRoomObj.get(0));
+            chatRoom.put("roomid", chatRoomObj.get(1));
+            chatRoom.put("serverid", chatRoomObj.get(2));
+            chatRooms.add(chatRoom);
         }
 
         JSONObject jsonObject = new JSONObject();
@@ -91,7 +170,8 @@ public class ServerMessage
 
     @SuppressWarnings("unchecked")
     public static JSONObject getClientIdApprovalRequest(String clientID, String sender, String threadID) {
-        // {"type" : "clientidapprovalrequest", "clientid" : "Adel", "sender" : "s2", "threadid" : "10"}
+        // {"type" : "clientidapprovalrequest", "clientid" : "Adel", "sender" : "s2",
+        // "threadid" : "10"}
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("type", "clientidapprovalrequest");
         jsonObject.put("clientid", clientID);
@@ -111,8 +191,10 @@ public class ServerMessage
     }
 
     @SuppressWarnings("unchecked")
-    public static JSONObject getRoomCreateApprovalRequest(String clientID, String roomID, String sender, String threadID) {
-        // {"type" : "roomcreateapprovalrequest", "clientid" : "Adel", "roomid" : "jokes", "sender" : "s2", "threadid" : "10"}
+    public static JSONObject getRoomCreateApprovalRequest(String clientID, String roomID, String sender,
+            String threadID) {
+        // {"type" : "roomcreateapprovalrequest", "clientid" : "Adel", "roomid" :
+        // "jokes", "sender" : "s2", "threadid" : "10"}
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("type", "roomcreateapprovalrequest");
         jsonObject.put("clientid", clientID);
@@ -133,7 +215,8 @@ public class ServerMessage
     }
 
     @SuppressWarnings("unchecked")
-    public static JSONObject getJoinRoomRequest(String clientID, String roomID, String formerRoomID, String sender, String threadID, String isLocalRoomChange) {
+    public static JSONObject getJoinRoomRequest(String clientID, String roomID, String formerRoomID, String sender,
+            String threadID, String isLocalRoomChange) {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("type", "joinroomapprovalrequest");
         jsonObject.put("sender", sender);
@@ -157,7 +240,8 @@ public class ServerMessage
     }
 
     @SuppressWarnings("unchecked")
-    public static JSONObject getMoveJoinRequest(String clientID, String roomID, String formerRoomID, String sender, String threadID) {
+    public static JSONObject getMoveJoinRequest(String clientID, String roomID, String formerRoomID, String sender,
+            String threadID) {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("type", "movejoinack");
         jsonObject.put("sender", sender);
@@ -191,7 +275,8 @@ public class ServerMessage
 
     @SuppressWarnings("unchecked")
     public static JSONObject getListResponse(ArrayList<String> roomIDList, String threadID) {
-        // {"type" : "listresponse", "rooms" : ["room-1","MainHall-s1","MainHall-s2"], "threadid" : 12 }
+        // {"type" : "listresponse", "rooms" : ["room-1","MainHall-s1","MainHall-s2"],
+        // "threadid" : 12 }
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("type", "listresponse");
         jsonObject.put("threadid", threadID);
@@ -201,7 +286,8 @@ public class ServerMessage
 
     @SuppressWarnings("unchecked")
     public static JSONObject getDeleteRoomRequest(String ownerID, String roomID, String mainHallID) {
-        // {"type" : "deleterequest", "owner" : "Adel", "roomid" : "jokes", "mainhall" : "MainHall-s1" }
+        // {"type" : "deleterequest", "owner" : "Adel", "roomid" : "jokes", "mainhall" :
+        // "MainHall-s1" }
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("type", "deleterequest");
         jsonObject.put("owner", ownerID);
@@ -239,7 +325,7 @@ public class ServerMessage
     }
 
     @SuppressWarnings("unchecked")
-    public static JSONObject answerVoteMessage(Integer suspectServerId, String vote, Integer votedBy){
+    public static JSONObject answerVoteMessage(Integer suspectServerId, String vote, Integer votedBy) {
         // {"type":"answervote","suspectserverid":"1","vote":"YES", "votedby":"1"}
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("type", "answervote");
