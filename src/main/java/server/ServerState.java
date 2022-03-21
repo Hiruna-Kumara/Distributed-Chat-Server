@@ -94,7 +94,7 @@ public class ServerState {
                     this.coordinationPort = Integer.parseInt(params[3]);
                     this.selfID = Integer.parseInt(params[0].substring(1, 2));
                 } else {
-                    if (selfID < Integer.parseInt(serverID)) {
+                    if (selfID < Integer.parseInt(serverID.substring(1, 2))) {
                         candidateServers.put(serverID, server);
                     } else {
                         lowPriorityServers.put(serverID, server);
@@ -274,7 +274,8 @@ public class ServerState {
     }
 
     public Server getSelfServerInfo() {
-        return new Server(Integer.parseInt(serverID), coordinationPort, clientsPort, serverAddress);
+//        return new Server(Integer.parseInt(serverID.substring(1, 2)), coordinationPort, clientsPort, serverAddress);
+        return new Server(selfID, coordinationPort, clientsPort, serverAddress);
     }
 
     public int getNumberOfServersWithHigherIds() {
