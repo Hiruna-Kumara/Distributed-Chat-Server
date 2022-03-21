@@ -48,7 +48,7 @@ public class FastBullyAlgorithm implements Runnable {
 
         ServerState state = ServerState.getInstance();
 
-        initiatingServerInfo = new Server(Integer.parseInt(state.getServerID()), state.getCoordinationPort(),
+        initiatingServerInfo = new Server(Integer.parseInt(state.getServerIDNum()), state.getCoordinationPort(),
                 state.getClientsPort(), state.getServerAddress());
         ConcurrentHashMap<String, Server> candidateServers = ServerState.getInstance().getCandidateServers();
 
@@ -62,7 +62,7 @@ public class FastBullyAlgorithm implements Runnable {
         MessageTransfer.sendServerBroadcast(
                 ServerMessage.getElection(String.valueOf(initiatingServerInfo.getServerID())),
                 CandidateServerList);
-        System.out.println("INFO : election message sent by the server " + ServerState.getInstance().getServerID());
+        System.out.println("INFO : election message sent by the server " + ServerState.getInstance().getServerIDNum());
         startWaitingForAnswerMessage(electionTimeOut);
     }
 
@@ -81,7 +81,7 @@ public class FastBullyAlgorithm implements Runnable {
         System.out.println("INFO : election message from " + initiatingServerID + " received");
         initiatingServerInfo = ServerState.getInstance().getOtherServers().get(initiatingServerID);
         try {
-            MessageTransfer.sendServer(ServerMessage.answerMessage(ServerState.getInstance().getServerID()),
+            MessageTransfer.sendServer(ServerMessage.answerMessage(ServerState.getInstance().getServerIDNum()),
                     initiatingServerInfo);
             System.out.println("INFO : answer message sent to " + initiatingServerID);
         } catch (IOException e) {
@@ -213,16 +213,16 @@ public class FastBullyAlgorithm implements Runnable {
 
         ArrayList<Room> roomList = new ArrayList<>();
         roomList.addAll(ServerState.getInstance().getRoomMap().values());
-        if (Integer.parseInt(ServerState.getInstance().getServerID()) == Integer.parseInt(serverID)) {
-            LeaderState.getInstance().updateLeader(ServerState.getInstance().getServerID(),
+        if (Integer.parseInt(ServerState.getInstance().getServerIDNum()) == Integer.parseInt(serverID)) {
+            LeaderState.getInstance().updateLeader(ServerState.getInstance().getServerIDNum(),
                     ServerState.getInstance().getClientIdList(), roomList);
             ServerState.getInstance().setLeaderUpdateComplete(true);
         } else {
-            if (Integer.parseInt(ServerState.getInstance().getServerID()) < Integer.parseInt(serverID)) {
+            if (Integer.parseInt(ServerState.getInstance().getServerIDNum()) < Integer.parseInt(serverID)) {
                 LeaderState.getInstance().resetLeader();
             }
             try {
-                MessageTransfer.sendToLeader(ServerMessage.leaderUpdate(ServerState.getInstance().getServerID(),
+                MessageTransfer.sendToLeader(ServerMessage.leaderUpdate(ServerState.getInstance().getServerIDNum(),
                         ServerState.getInstance().getClientIdList(), roomList));
                 System.out.println("INFO : send information to new leader " + serverID);
                 // startWaitingForUpdateCompleteMessage(50L);
@@ -231,7 +231,7 @@ public class FastBullyAlgorithm implements Runnable {
                 // e.printStackTrace();
             }
         }
-        // Leader.getInstance().updateLeader(Server.getInstance().getServerID(),
+        // Leader.getInstance().updateLeader(Server.getInstance().getServerIDNum(),
         // Server.getInstance().getClientIDList(), roomList);
     }
 

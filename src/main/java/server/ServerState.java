@@ -272,7 +272,9 @@ public class ServerState {
     public int getSelfID() {
         return selfID;
     }
-
+    public String getServerIDNum(){
+        return serverID.substring(1);
+    }
     public Server getSelfServerInfo() {
 //        return new Server(Integer.parseInt(serverID.substring(1, 2)), coordinationPort, clientsPort, serverAddress);
         return new Server(selfID, coordinationPort, clientsPort, serverAddress);
