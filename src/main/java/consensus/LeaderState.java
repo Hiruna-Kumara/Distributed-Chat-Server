@@ -168,8 +168,7 @@ public class LeaderState {
             for (Room chatRoom : roomList) {
                 addApprovedRoom(chatRoom);
             }
-
-            if (!serverID.equals(ServerState.getInstance().getServerID())) {
+            if (!serverID.equals(ServerState.getInstance().getServerIDNum())) {
                 Server destServer = ServerState.getInstance().getOtherServers().get(serverID);
                 try {
                     MessageTransfer.sendServer(
