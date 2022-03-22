@@ -1,9 +1,10 @@
 package consensus.election.timeout;
 
-import server.Server;
-import server.ServerState;
+import Server.Server;
+import Server.ServerInfo;
 import consensus.election.FastBullyAlgorithm;
 import org.quartz.DisallowConcurrentExecution;
+import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
@@ -11,19 +12,19 @@ import org.quartz.JobExecutionException;
 public class CoordinatorMessageTimeout extends MessageTimeout {
     @Override
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
-        if (!interrupted.get() && ServerState.getInstance().getOngoingElection()) {
-            try {
-                // if no coordinator message received, send the nomination to the next highest
-                // server
-                Server highestPriorityCandidate = ServerState.getInstance().getHighestPriorityCandidate();
+        if(!interrupted.get() && Server.getInstance().getOngoingElection()){
+            try{
+                //if no coordinator message received, send the nomination to the next highest server
+                ServerInfo highestPriorityCandidate = Server.getInstance().getHighestPriorityCandidate();
                 FastBullyAlgorithm nominationFBA;
-                if (highestPriorityCandidate != null) {
+                if(highestPriorityCandidate != null){
                     nominationFBA = new FastBullyAlgorithm("sendNominationCoordinatorTimeout", jobExecutionContext);
-                } else {
+                }
+                else{
                     nominationFBA = new FastBullyAlgorithm("restart_election");
                 }
                 new Thread(nominationFBA).start();
-            } catch (NullPointerException ne) {
+            }catch (NullPointerException ne) {
                 System.out.println("highestPriorityCandidate is null");
             }
         }

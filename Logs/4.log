@@ -1,0 +1,77 @@
+2022-03-17 18:26:00 INFO  main:9 - s4 started
+2022-03-17 18:26:01 INFO  FastBullyAlgorithm:143 - View message received with leader as 3
+2022-03-17 18:26:01 INFO  FastBullyAlgorithm:143 - View message received with leader as 3
+2022-03-17 18:26:01 INFO  FastBullyAlgorithm:310 - IamUp messages sent
+2022-03-17 18:26:01 DEBUG FastBullyAlgorithm:241 - Starting the waiting job [DefaultQuartzScheduler] : group_fast_bully.view_msg_timeout_job
+2022-03-17 18:26:01 INFO  FastBullyAlgorithm:143 - View message received with leader as 3
+2022-03-17 18:26:01 INFO  FastBullyAlgorithm:150 - Coordinator message sent [coordinator] with leader as 4
+2022-03-17 18:26:01 INFO  LeaderUpdateMessage:24 - Leader update request from server 1 received
+2022-03-17 18:26:01 INFO  LeaderUpdateMessage:24 - Leader update request from server 1 received
+2022-03-17 18:26:01 INFO  FastBullyAlgorithm:176 - Accepting new leader server 4
+2022-03-17 18:26:01 DEBUG FastBullyAlgorithm:283 - Job [group_fast_bully.view_msg_timeout_job] get interrupted from [DefaultQuartzScheduler]
+2022-03-17 18:26:01 INFO  FastBullyAlgorithm:150 - Coordinator message sent [coordinator] with leader as 4
+2022-03-17 18:26:01 INFO  FastBullyAlgorithm:150 - Coordinator message sent [coordinator] with leader as 4
+2022-03-17 18:26:01 INFO  LeaderUpdateMessage:24 - Leader update request from server 3 received
+2022-03-17 18:26:01 INFO  LeaderUpdateMessage:24 - Leader update request from server 3 received
+2022-03-17 18:26:01 INFO  FastBullyAlgorithm:176 - Accepting new leader server 4
+2022-03-17 18:26:01 INFO  LeaderUpdateMessage:24 - Leader update request from server 1 received
+2022-03-17 18:26:01 INFO  LeaderUpdateMessage:24 - Leader update request from server 1 received
+2022-03-17 18:26:01 INFO  FastBullyAlgorithm:176 - Accepting new leader server 4
+2022-03-17 18:26:01 INFO  LeaderUpdateMessage:24 - Leader update request from server 2 received
+2022-03-17 18:26:01 INFO  LeaderUpdateMessage:24 - Leader update request from server 2 received
+2022-03-17 18:26:01 INFO  LeaderUpdateMessage:24 - Leader update request from server 3 received
+2022-03-17 18:26:01 INFO  LeaderUpdateMessage:24 - Leader update request from server 3 received
+2022-03-17 18:26:01 DEBUG FastBullyAlgorithm:283 - Job [group_fast_bully.view_msg_timeout_job] get interrupted from [DefaultQuartzScheduler]
+2022-03-17 18:26:01 INFO  LeaderUpdateMessage:24 - Leader update request from server 2 received
+2022-03-17 18:26:01 INFO  LeaderUpdateMessage:24 - Leader update request from server 1 received
+2022-03-17 18:26:01 INFO  LeaderUpdateMessage:24 - Leader update request from server 1 received
+2022-03-17 18:26:01 DEBUG FastBullyAlgorithm:283 - Job [group_fast_bully.view_msg_timeout_job] get interrupted from [DefaultQuartzScheduler]
+2022-03-17 18:26:46 INFO  ClientIdApprovalRequestMessage:30 - Client Adel approved by the leader 4
+2022-03-17 18:27:02 INFO  ClientIdApprovalRequestMessage:30 - Client Adel not approved by the leader 4
+2022-03-17 18:27:07 INFO  ClientIdApprovalRequestMessage:30 - Client Jhon approved by the leader 4
+2022-03-17 18:27:17 INFO  ListRequestMessage:21 - Room list fetched
+2022-03-17 18:27:25 INFO  JoinRoomApprovalRequestMessage:54 - Join Room from MainHall-2 to room1 for client Jhon is approved
+2022-03-17 18:27:25 INFO  MoveJoinRequestMessage:31 - Moved Client Jhon to server 1 and room room1 is updated as current room
+2022-03-17 18:27:57 INFO  JoinRoomApprovalRequestMessage:54 - Join Room from MainHall-1 to MainHall-4 for client Jhon is approved
+2022-03-17 18:27:57 INFO  ServerHandler:21 - A client connected to the chat server
+2022-03-17 18:28:05 INFO  CreateRoomMessage:55 - Room 'room4' creation request from client Jhon is approved
+2022-03-17 18:28:05 INFO  CreateRoomMessage:108 - Jhon successfully created the room room4
+2022-03-17 18:28:12 INFO  JoinRoomApprovalRequestMessage:54 - Join Room from MainHall-1 to room4 for client Adel is approved
+2022-03-17 18:28:12 INFO  ServerHandler:21 - A client connected to the chat server
+2022-03-17 18:29:30 WARN  DeleteRoomMessage:95 - Requesting client Adel does not own the room room4
+2022-03-17 18:29:43 INFO  DeleteRoomMessage:65 - Room room4 was deleted by : Jhon
+2022-03-17 18:29:46 DEBUG WhoMessage:32 - participants in room MainHall-4 : [Jhon, Adel]
+2022-03-17 18:29:50 DEBUG WhoMessage:32 - participants in room MainHall-4 : [Jhon, Adel]
+2022-03-17 18:30:11 INFO  ServerHandler:21 - A client connected to the chat server
+2022-03-17 18:30:11 INFO  NewIdentityMessage:55 - Client Honey approved by the leader 4
+2022-03-17 18:30:11 INFO  NewIdentityMessage:81 - Client Honey successfully joined the server 4 room MainHall-4
+2022-03-17 18:30:32 DEBUG ListMessage:53 - Rooms in the system :[MainHall-1, MainHall-2, MainHall-3, MainHall-4]
+2022-03-17 18:30:35 DEBUG WhoMessage:32 - participants in room MainHall-4 : [Jhon, Adel, Honey]
+2022-03-17 18:30:44 INFO  CreateRoomMessage:55 - Room 'room4' creation request from client Honey is approved
+2022-03-17 18:30:44 INFO  CreateRoomMessage:108 - Honey successfully created the room room4
+2022-03-17 18:30:53 INFO  JoinRoomMessage:73 - client Adel joined room :room4
+2022-03-17 18:31:01 INFO  JoinRoomMessage:73 - client Jhon joined room :room4
+2022-03-17 18:31:17 INFO  DeleteRoomMessage:65 - Room room4 was deleted by : Honey
+2022-03-17 18:31:24 DEBUG WhoMessage:32 - participants in room MainHall-4 : [Honey, Adel, Jhon]
+2022-03-17 18:31:34 INFO  JoinRoomMessage:102 - Received response for route request for join room in leader 4
+2022-03-17 18:31:34 INFO  JoinRoomMessage:117 -  client Jhon left room :MainHall-4
+2022-03-17 18:31:34 INFO  JoinRoomMessage:125 - Send broadcast to former room in local server
+2022-03-17 18:31:34 INFO  JoinRoomMessage:135 - Route Message Sent to Client
+2022-03-17 18:31:34 INFO  MoveJoinRequestMessage:31 - Moved Client Jhon to server 3 and room MainHall-3 is updated as current room
+2022-03-17 18:31:40 INFO  ListRequestMessage:21 - Room list fetched
+2022-03-17 18:31:49 INFO  FastBullyAlgorithm:79 - Election message from 3 received.
+2022-03-17 18:31:49 INFO  FastBullyAlgorithm:83 - Answer message sent to 3
+2022-03-17 18:31:49 DEBUG FastBullyAlgorithm:241 - Starting the waiting job [DefaultQuartzScheduler] : group_fast_bully.coordinator_or_nomination_msg_timeout_job
+2022-03-17 18:31:59 INFO  LeaderUpdateMessage:24 - Leader update request from server 1 received
+2022-03-17 18:31:59 INFO2022-03-17 18:31:59   INFO  LeaderUpdateMessage:FastBullyAlgorithm:24 - Leader update request from server 1 received
+160 - Coordinator message sent [coordinatorFromNomination] with leader as 4
+2022-03-17 18:31:59 INFO  LeaderUpdateMessage:24 - Leader update request from server 2 received
+2022-03-17 18:31:59 INFO  LeaderUpdateMessage:24 - Leader update request from server 3 received
+2022-03-17 18:31:59 INFO  LeaderUpdateMessage:24 - Leader update request from server 3 received
+2022-03-17 18:31:59 INFO  FastBullyAlgorithm:176 - Accepting new leader server 4
+2022-03-17 18:31:59 DEBUG FastBullyAlgorithm:283 - Job [group_fast_bully.coordinator_or_nomination_msg_timeout_job] get interrupted from [DefaultQuartzScheduler]
+2022-03-17 18:32:00 INFO  Consensus:81 - [SKIP] There seems to be on going consensus at the moment
+2022-03-17 18:32:04 INFO  ClientIdApprovalRequestMessage:30 - Client Jhon approved by the leader 4
+2022-03-17 18:32:10 INFO  Consensus:81 - [SKIP] There seems to be on going consensus at the moment
+2022-03-17 18:32:20 INFO  Consensus:81 - [SKIP] There seems to be on going consensus at the moment
+2022-03-17 18:32:24 WARN  Client:52 - Server 3 is down

@@ -1,8 +1,9 @@
 package consensus.election.timeout;
 
-import server.ServerState;
+import Server.Server;
 import consensus.election.FastBullyAlgorithm;
 import org.quartz.DisallowConcurrentExecution;
+import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
@@ -10,7 +11,7 @@ import org.quartz.JobExecutionException;
 public class NominationMessageTimeout extends MessageTimeout {
     @Override
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
-        if (ServerState.getInstance().getOngoingElection()) {
+        if(Server.getInstance().getOngoingElection()){
             if (!interrupted.get()) {
                 // If nomination message not received, restart the election procedure
                 FastBullyAlgorithm startFBA = new FastBullyAlgorithm("restart_election");

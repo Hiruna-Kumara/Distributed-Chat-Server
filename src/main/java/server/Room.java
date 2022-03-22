@@ -1,45 +1,45 @@
-package server;
+package Server;
 
-import client.ClientState;
+import Client.Client;
 
 import java.util.HashMap;
 
 public class Room {
-    private final String ownerID;
+
     private final String roomID;
-    private final int serverID;
+    private final String serverID;
+    private final String ownerClientID;
 
-    private final HashMap<String,ClientState> clientStateMap = new HashMap<>();  //<clientID,clientState>
+    private final HashMap<String,Client> clientList = new HashMap<>();
 
-    //TODO : check sync keyword
-    public Room(String ownerID, String roomID, int serverID) {
-        this.ownerID = ownerID;
+    public Room(String roomID, String serverID, String ownerClientID){
         this.roomID = roomID;
         this.serverID = serverID;
+        this.ownerClientID = ownerClientID;
     }
 
-    public synchronized String getRoomID() {
+    public String getRoomID() {
         return roomID;
     }
 
-    public synchronized int getServerID() {
+    public String getServerID() {
         return serverID;
     }
 
-    public synchronized HashMap<String, ClientState> getClientStateMap() {
-        return clientStateMap;
+    public String getOwnerClientID() {
+        return ownerClientID;
     }
 
-    public synchronized void addParticipants(ClientState clientState) {
-        this.clientStateMap.put(clientState.getClientID(), clientState);
+    public HashMap<String, Client> getClientList() {
+        return clientList;
     }
 
-    public synchronized void removeParticipants(String clientID) {
-        this.clientStateMap.remove(clientID);
+    public void addClient(Client client){
+        clientList.put(client.getClientID(), client);
     }
 
-    public String getOwnerIdentity() {
-        return ownerID;
+    public void removeClient(String clientID){
+        clientList.remove(clientID);
     }
 
 }

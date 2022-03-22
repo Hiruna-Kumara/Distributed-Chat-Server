@@ -1,9 +1,8 @@
-package utils;
+package Model;
 
 public abstract class Constant {
 
-    private Constant() {
-    } // no init
+    private Constant() {} // no init
 
     public static final String ALIVE_JOB = "AliveJob".toUpperCase();
     public static final String ALIVE_JOB_TRIGGER = "AliveJobTrigger".toUpperCase();

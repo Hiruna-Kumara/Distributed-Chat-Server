@@ -1,13 +1,13 @@
 package consensus.election.timeout;
 
-import server.ServerState;
+import Server.Server;
 import org.quartz.*;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public abstract class MessageTimeout implements Job, InterruptableJob {
+public abstract class MessageTimeout implements Job, InterruptableJob{
 
-    protected ServerState server = ServerState.getInstance();
+    protected Server server = Server.getInstance();
     protected AtomicBoolean interrupted = new AtomicBoolean(false);
 
     @Override
