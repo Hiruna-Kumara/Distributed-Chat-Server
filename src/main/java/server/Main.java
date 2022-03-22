@@ -3,6 +3,10 @@ package Server;
 import Client.ClientThread;
 import consensus.Leader;
 import consensus.election.FastBullyAlgorithm;
+import heartbeat.ConsensusJob;
+import heartbeat.GossipJob;
+import org.quartz.*;
+import org.quartz.impl.StdSchedulerFactory;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -83,9 +87,9 @@ public class Main {
             ServerThread serverThread = new ServerThread( serverCoordinationSocket );
             // starting the thread
             Thread Server_t = new Thread(serverThread);
-            if(Integer.parseInt(mode) == 2){
-                Thread.sleep(10000);
-            }
+//            if(Integer.parseInt(mode) == 2){
+//                Thread.sleep(10000);
+//            }
             Server_t.start();
 
 
@@ -148,9 +152,9 @@ public class Main {
         catch ( IOException e) {
             System.out.println("ERROR : occurred in main " + Arrays.toString(e.getStackTrace()));
         }
-        catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+//        catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
     }
 
     private static void initiateCoordinator() {

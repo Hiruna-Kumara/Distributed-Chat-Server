@@ -120,7 +120,7 @@ public class Server {
             }
             otherServers.put(serverID, serverInfo);
         }
-        allServers.put(serverID, serverInfo);
+        allServers.put(Integer.parseInt(serverID), serverInfo);
     }
 
     public String getMainHallID(String serverID) {
