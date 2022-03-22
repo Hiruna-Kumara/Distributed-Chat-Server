@@ -23,10 +23,11 @@ public class Main {
     public static void main(String[] args) {
 
 
-        String selfID = args[0];
+        String selfID = args[0].substring(1);
         // String mode = args[1];
+        String configFile=args[1];
 
-        String configFile = "src/main/config/serverConfig.txt";
+//        String configFile = "src/main/config/serverConfig.txt";
         File conf = new File(configFile); // read configuration
         Scanner myReader = null;
         try {
@@ -38,7 +39,7 @@ public class Main {
         while (myReader.hasNextLine()) {
             String data = myReader.nextLine();
             String[] params = data.split(" ");
-            server.addServer(selfID, params[0], params[1], Integer.parseInt(params[2]), Integer.parseInt(params[3]));
+            server.addServer(selfID, params[0], params[1],  Integer.parseInt(params[3]),Integer.parseInt(params[2]));
         }
 
         System.out.println("LOG  : ------server started------");
