@@ -21,6 +21,10 @@ public class Server {
     private final ConcurrentHashMap<String, ServerInfo> lowPriorityServers = new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, ServerInfo> tempCandidateServers = new ConcurrentHashMap<>();
 
+    private final ConcurrentHashMap<Integer, ServerInfo> allServers = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Integer, Integer> heartbeatCountList = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Integer, String> suspectList = new ConcurrentHashMap<>();
+
     private AtomicBoolean ongoingElection = new AtomicBoolean(false);;
     private AtomicBoolean answerMessageReceived = new AtomicBoolean(false);;
     private AtomicBoolean viewMessageReceived = new AtomicBoolean(false);;
@@ -115,6 +119,7 @@ public class Server {
             }
             otherServers.put(serverID, serverInfo);
         }
+        allServers.put(serverID, serverInfo);
     }
 
     public String getMainHallID(String serverID) {
@@ -223,6 +228,31 @@ public class Server {
     public void removeClient (String clientID, String formerRoom, Long threadID){
         this.roomList.get(formerRoom).removeClient(clientID);
         this.clientThreadList.remove(threadID);
+    }
+
+    public ConcurrentHashMap<Integer, ServerInfo> getAllServers() {
+        return allServers;
+    }
+
+    public Integer getSelfIdInt() {
+        Integer i=Integer.parseInt(serverID);
+        return i;
+    }
+
+    public synchronized void removeServerInCountList(Integer serverId) {
+        heartbeatCountList.remove(serverId);
+    }
+
+    public ConcurrentHashMap<Integer, Integer> getHeartbeatCountList() {
+        return heartbeatCountList;
+    }
+
+    public synchronized void removeServerInSuspectList(Integer serverId) {
+        suspectList.remove(serverId);
+    }
+
+    public ConcurrentHashMap<Integer, String> getSuspectList() {
+        return suspectList;
     }
 }
 

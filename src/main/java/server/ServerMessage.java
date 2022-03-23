@@ -3,9 +3,20 @@ package Server;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
+import java.util.HashMap;
 import java.util.List;
 
 public class ServerMessage {
+
+    private static ServerMessage instance = null;
+
+    private ServerMessage() {
+    }
+
+    public static synchronized ServerMessage getInstance() {
+        if (instance == null) instance = new ServerMessage();
+        return instance;
+    }
 
     public static JSONObject electionMessage(String serverID) {
         // {"option": "election", "source": "s1"}
@@ -201,6 +212,16 @@ public class ServerMessage {
         jsonObject.put("former", formerRoomID);
         jsonObject.put("clientID", clientID);
         jsonObject.put("threadID", threadID);
+        return jsonObject;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static JSONObject gossipMessage(Integer serverId, HashMap<Integer, Integer> heartbeatCountList) {
+        // {"type":"gossip","serverid":"1","heartbeatcountlist":{"1":0,"2":1,"3":1,"4":2}}
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("type", "gossip");
+        jsonObject.put("serverId", serverId);
+        jsonObject.put("heartbeatCountList", heartbeatCountList);
         return jsonObject;
     }
 }

@@ -44,4 +44,9 @@ public class ServerInfo {
     public void setClientPort(Integer clientPort) {
         this.clientPort = clientPort;
     }
+
+    public Integer getServerIdInt() {
+        Integer i=Integer.parseInt(serverID);
+        return i;
+    }
 }
