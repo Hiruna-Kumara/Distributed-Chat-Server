@@ -36,6 +36,11 @@ public class Leader {
         return leaderID;
     }
 
+    public synchronized Integer getLeaderIDInt() {
+        Integer i=Integer.parseInt(leaderID);
+        return i;
+    }
+
     public synchronized void setLeaderID(String leaderID) {
         this.leaderID = leaderID;
     }
@@ -176,6 +181,21 @@ public class Leader {
                 });
             }
         }
+    }
+
+    public void removeRemoteChatRoomsClientsByServerId(Integer serverId) {
+        for (String entry : globalRoomList.keySet()) {
+            List<Room> remoteRoom = globalRoomList.get(entry);
+            for(Room room: remoteRoom){
+                if(room.getServerIdInt()==serverId){
+                    for(String client : room.getClientList().keySet()){
+                        globalClientList.remove(client);
+                    }
+                    globalRoomList.remove(entry);
+                }
+            }
+        }
+
     }
 
 }

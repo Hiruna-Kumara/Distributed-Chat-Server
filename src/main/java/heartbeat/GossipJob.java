@@ -119,7 +119,7 @@ public class GossipJob implements Job{
 
         System.out.println(("Current cluster heart beat state is: " + serverState.getHeartbeatCountList()));
 
-        if ((Leader.getInstance().getLeaderID() != null) && Leader.getInstance().getLeaderID().equals(serverState.getServerID())) {
+        if (serverState.getLeaderUpdateComplete() && Leader.getInstance().getLeaderID().equals(serverState.getServerID())) {
             if (serverState.getHeartbeatCountList().size() < gossipFromOthers.size()) {
                 for (String serverId : gossipFromOthers.keySet()) {
                     if (!serverState.getHeartbeatCountList().containsKey(Integer.parseInt(serverId))) {

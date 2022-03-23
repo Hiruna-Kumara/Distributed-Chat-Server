@@ -224,4 +224,33 @@ public class ServerMessage {
         jsonObject.put("heartbeatCountList", heartbeatCountList);
         return jsonObject;
     }
+
+    @SuppressWarnings("unchecked")
+    public static JSONObject startVoteMessage(Integer serverId, Integer suspectServerId) {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("type", "startVote");
+        jsonObject.put("serverId", serverId);
+        jsonObject.put("suspectServerId", suspectServerId);
+        return jsonObject;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static JSONObject notifyServerDownMessage(Integer serverId) {
+        // {"type":"notifyserverdown", "serverid":"s2"}
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("type", "notifyserverdown");
+        jsonObject.put("serverId", serverId);
+        return jsonObject;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static JSONObject answerVoteMessage(Integer suspectServerId, String vote, Integer votedBy){
+        // {"type":"answervote","suspectserverid":"1","vote":"YES", "votedby":"1"}
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("type", "answervote");
+        jsonObject.put("suspectServerId", suspectServerId);
+        jsonObject.put("votedBy", votedBy);
+        jsonObject.put("vote", vote);
+        return jsonObject;
+    }
 }

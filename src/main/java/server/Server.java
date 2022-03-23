@@ -24,6 +24,7 @@ public class Server {
     private final ConcurrentHashMap<Integer, ServerInfo> allServers = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<Integer, Integer> heartbeatCountList = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<Integer, String> suspectList = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Integer> voteSet = new ConcurrentHashMap<>();
 
     private AtomicBoolean ongoingElection = new AtomicBoolean(false);;
     private AtomicBoolean answerMessageReceived = new AtomicBoolean(false);;
@@ -253,6 +254,10 @@ public class Server {
 
     public ConcurrentHashMap<Integer, String> getSuspectList() {
         return suspectList;
+    }
+
+    public ConcurrentHashMap<String, Integer> getVoteSet() {
+        return voteSet;
     }
 }
 

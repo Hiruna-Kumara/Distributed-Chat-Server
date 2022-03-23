@@ -42,4 +42,9 @@ public class Room {
         clientList.remove(clientID);
     }
 
+    public Integer getServerIdInt() {
+        Integer i=Integer.parseInt(serverID);
+        return i;
+    }
+
 }
