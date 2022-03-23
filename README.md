@@ -24,3 +24,12 @@ java -jar server.jar [server_name] "[path to server configuration file]"
 ```
 java -jar server.jar s1 C:\code\Distributed-Chat-Server\src\main\config\serverConfig.txt
 ```
+
+## Building the executable server file
+
+Run the below commands
+```
+mvn clean install
+mvn clean compile assembly:single
+```
+The executable jar file for server will be created inside the ```target``` folder. 
