@@ -97,7 +97,6 @@ public class ConsensusJob implements Job {
                         leaderState.removeRemoteChatRoomsClientsByServerId(suspectServerId);
                         serverState.removeServerInCountList(suspectServerId);
                         serverState.removeServerInSuspectList(suspectServerId);
-                        serverState.removeServerInAllServers(suspectServerId);
 
                     } catch (Exception e) {
                         System.out.println("ERROR : " + suspectServerId + "Removing is failed");
