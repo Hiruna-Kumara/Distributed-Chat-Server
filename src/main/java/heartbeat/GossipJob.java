@@ -1,6 +1,7 @@
 package heartbeat;
 
 import consensus.Leader;
+import consensus.election.FastBullyAlgorithm;
 
 import org.json.simple.JSONObject;
 import Server.ServerInfo;
@@ -23,6 +24,7 @@ import java.util.Random;
 public class GossipJob implements Job{
 
     private Server serverState = Server.getInstance();
+    private Leader leaderState = Leader.getInstance();
     private ServerMessage serverMessage = ServerMessage.getInstance();
     //git
     
@@ -64,6 +66,19 @@ public class GossipJob implements Job{
                 else {
                     serverState.getSuspectList().put(serverId, "NOT_SUSPECTED");
                 }
+            }
+        }
+
+        if (serverState.getLeaderUpdateComplete()){
+            
+            Integer leaderServerId = leaderState.getLeaderIDInt();
+            System.out.println("Current coordinator is : " + leaderState.getLeaderID().toString());
+            
+            // if the leader/coordinator server is in suspect list, start the election process
+            if (serverState.getSuspectList().get(leaderServerId).equals("SUSPECTED")) {
+            
+                //initiate an election
+                FastBullyAlgorithm.initialize();
             }
         }
 

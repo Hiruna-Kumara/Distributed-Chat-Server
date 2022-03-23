@@ -20,7 +20,7 @@ public class Main {
 
 
         String selfID = args[0];
-        String mode = args[1];
+        // String mode = args[1];
 
         String configFile = "src/main/config/serverConfig.txt";
         File conf = new File(configFile); // read configuration
@@ -98,7 +98,7 @@ public class Main {
             Server.getInstance().setElectionCoordinatorTimeout(10L);
             // T4
             Server.getInstance().setElectionNominationTimeout(30L);
-            initiateCoordinator(Integer.parseInt(mode));
+            initiateCoordinator();
 
 
 //            Runnable heartbeat = new BullyAlgorithm("Heartbeat");
@@ -115,6 +115,15 @@ public class Main {
 //                startGossip();
 //                startConsensus();
 //            }
+
+            /**
+             Heartbeat detection using gossiping
+             **/
+            if (true) {
+                System.out.println("INFO : Failure Detection is running GOSSIP mode");
+                startGossip();
+                startConsensus();
+            }
 
 
             /**
@@ -144,22 +153,66 @@ public class Main {
         }
     }
 
-    private static void initiateCoordinator(Integer mode) {
+    private static void initiateCoordinator() {
         System.out.println("INFO : leader election started");
         if (Server.getInstance().getOtherServers().isEmpty()){
             //self is the leader
         }
         else{
-            if(mode == 1){
                 FastBullyAlgorithm IamUp_FBA = new FastBullyAlgorithm("IamUp");
                 new Thread(IamUp_FBA).start();
-            }
 //            IamUp_FBA.sendIamUpMessage();
-            else if(mode == 2){
-                if (Integer.parseInt(Server.getInstance().getSelfServerInfo().getServerID()) == 1){
-                    FastBullyAlgorithm.initialize();
-                }
-            }
+            
+        }
+    }
+
+    private static void startGossip() {
+        try {
+
+            JobDetail gossipJob = JobBuilder.newJob(GossipJob.class)
+                    .withIdentity("GOSSIPJOB", "group1").build();
+
+            gossipJob.getJobDataMap().put("aliveErrorFactor", 5);
+
+            Trigger gossipTrigger = TriggerBuilder
+                    .newTrigger()
+                    .withIdentity("GOSSIPJOBTRIGGER", "group1")
+                    .withSchedule(
+                            SimpleScheduleBuilder.simpleSchedule()
+                                    .withIntervalInSeconds(3).repeatForever())
+                    .build();
+
+            Scheduler scheduler = new StdSchedulerFactory().getScheduler();
+            scheduler.start();
+            scheduler.scheduleJob(gossipJob, gossipTrigger);
+
+        } catch (SchedulerException e) {
+            System.out.println("ERROR : Error in starting gossiping");
+        }
+    }
+
+    private static void startConsensus() {
+        try {
+
+            JobDetail consensusJob = JobBuilder.newJob(ConsensusJob.class)
+                    .withIdentity("CONSENSUSJOB", "group1").build();
+
+            consensusJob.getJobDataMap().put("consensusVoteDuration", 5);
+
+            Trigger consensusTrigger = TriggerBuilder
+                    .newTrigger()
+                    .withIdentity("CONSENSUSJOBTRIGGER", "group1")
+                    .withSchedule(
+                            SimpleScheduleBuilder.simpleSchedule()
+                                    .withIntervalInSeconds(10).repeatForever())
+                    .build();
+
+            Scheduler scheduler = new StdSchedulerFactory().getScheduler();
+            scheduler.start();
+            scheduler.scheduleJob(consensusJob, consensusTrigger);
+
+        } catch (SchedulerException e) {
+            System.out.println("ERROR : Error in starting consensus");
         }
     }
 

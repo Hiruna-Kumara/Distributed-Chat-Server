@@ -4,6 +4,9 @@ import Client.ClientThread;
 import MessagePassing.MessagePassing;
 import consensus.Leader;
 import consensus.election.FastBullyAlgorithm;
+import heartbeat.ConsensusJob;
+import heartbeat.GossipJob;
+
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -233,6 +236,18 @@ public class ServerThread implements Runnable{
                         // leader removes client from global room list
                         Leader.getInstance().removeFromGlobalClientAndRoomList(clientID, serverID, formerRoomID);
                         System.out.println("INFO : Client '" + clientID + "' deleted by leader");
+                    }
+                    else if (Objects.equals(type, "gossip")) {
+                        GossipJob.receiveMessages(jsonObject);
+                    }
+                    else if (Objects.equals(type, "startVote")) {
+                        ConsensusJob.startVoteMessageHandler(jsonObject);
+                    } 
+                    else if (Objects.equals(type, "answervote")) {
+                        ConsensusJob.answerVoteHandler(jsonObject);
+                    } 
+                    else if (Objects.equals(type, "notifyserverdown")) {
+                        ConsensusJob.notifyServerDownMessageHandler(jsonObject);
                     }
                 }else {
                     System.out.println("WARN : Command error, Corrupted JSON from Server");
