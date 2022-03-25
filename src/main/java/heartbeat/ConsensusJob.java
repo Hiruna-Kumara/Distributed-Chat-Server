@@ -1,6 +1,9 @@
 package heartbeat;
 
 import MessagePassing.MessagePassing;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.quartz.*;
 import Server.Server;
@@ -16,6 +19,8 @@ public class ConsensusJob implements Job {
     private Leader leaderState = Leader.getInstance();
     private ServerMessage serverMessage = ServerMessage.getInstance();
 
+    private static final Logger LOG = LogManager.getLogger(ConsensusJob.class);
+
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
         if (!serverState.getOngoingElection()) {
@@ -27,7 +32,8 @@ public class ConsensusJob implements Job {
             }
         } 
         else {
-            System.out.println("[SKIP] There seems to be on going consensus at the moment, skip.");
+            // System.out.println("[SKIP] There seems to be on going consensus at the moment, skip.");
+            LOG.info("[SKIP] There seems to be on going consensus at the moment, skip.");
         }
     }
 
@@ -70,10 +76,12 @@ public class ConsensusJob implements Job {
                 startVoteMessage = serverMessage.startVoteMessage(serverState.getSelfIdInt(), suspectServerId);
                 try {
                     MessagePassing.sendServerBroadcast(startVoteMessage, serverList);
-                    System.out.println("INFO : Leader calling for vote to kick suspect-server: " + startVoteMessage);
+                    // System.out.println("INFO : Leader calling for vote to kick suspect-server: " + startVoteMessage);
+                    LOG.info("Leader calling for vote to kick suspect-server: " + startVoteMessage);
                 } 
                 catch (Exception e) {
-                    System.out.println("WARN : Leader calling for vote to kick suspect-server is failed");
+                    // System.out.println("WARN : Leader calling for vote to kick suspect-server is failed");
+                    LOG.warn("Leader calling for vote to kick suspect-server is failed");
                 }
 
                 //wait for consensus vote duration period
@@ -84,7 +92,8 @@ public class ConsensusJob implements Job {
                     e.printStackTrace();
                 }
 
-                System.out.println((String.format("INFO : Consensus votes to kick server [%s]: %s", suspectServerId, serverState.getVoteSet())));
+                // System.out.println((String.format("INFO : Consensus votes to kick server [%s]: %s", suspectServerId, serverState.getVoteSet())));
+                LOG.info(String.format("INFO : Consensus votes to kick server [%s]: %s", suspectServerId, serverState.getVoteSet()));
 
                 if (serverState.getVoteSet().get("YES") > serverState.getVoteSet().get("NO")) {
 
@@ -93,16 +102,19 @@ public class ConsensusJob implements Job {
                     try {
 
                         MessagePassing.sendServerBroadcast(notifyServerDownMessage, serverList);
-                        System.out.println("INFO : Notify server " + suspectServerId + " down. Removing...");
+                        // System.out.println("INFO : Notify server " + suspectServerId + " down. Removing...");
+                        LOG.info("Notify server " + suspectServerId + " down. Removing...");
                         leaderState.removeRemoteChatRoomsClientsByServerId(suspectServerId);
                         serverState.removeServerInCountList(suspectServerId);
                         serverState.removeServerInSuspectList(suspectServerId);
 
                     } catch (Exception e) {
-                        System.out.println("ERROR : " + suspectServerId + "Removing is failed");
+                        // System.out.println("ERROR : " + suspectServerId + "Removing is failed");
+                        LOG.error(suspectServerId + "Removing is failed");
                     }
 
-                    System.out.println("INFO : Number of servers in group: " + serverState.getAllServers().size());
+                    // System.out.println("INFO : Number of servers in group: " + serverState.getAllServers().size());
+                    LOG.info("Number of servers in group: " + serverState.getAllServers().size());
                 }
             }
         }
@@ -124,10 +136,12 @@ public class ConsensusJob implements Job {
                 answerVoteMessage = serverMessage.answerVoteMessage(suspectServerId, "YES", mySeverId);
                 try {
                     MessagePassing.sendServer(answerVoteMessage, serverState.getAllServers().get(Leader.getInstance().getLeaderID()));
-                    System.out.println(String.format("INFO : Voting on suspected server: [%s] vote: YES", suspectServerId));
+                    // System.out.println(String.format("INFO : Voting on suspected server: [%s] vote: YES", suspectServerId));
+                    LOG.info(String.format("INFO : Voting on suspected server: [%s] vote: YES", suspectServerId));
                 } 
                 catch (Exception e) {
-                    System.out.println("ERROR : Voting on suspected server is failed");
+                    // System.out.println("ERROR : Voting on suspected server is failed");
+                    LOG.error("Voting on suspected server is failed");
                 }
             }
 
@@ -136,10 +150,12 @@ public class ConsensusJob implements Job {
                 answerVoteMessage = serverMessage.answerVoteMessage(suspectServerId, "NO", mySeverId);
                 try {
                     MessagePassing.sendServer(answerVoteMessage, serverState.getAllServers().get(Leader.getInstance().getLeaderID()));
-                    System.out.println(String.format("INFO : Voting on suspected server: [%s] vote: NO", suspectServerId));
+                    // System.out.println(String.format("INFO : Voting on suspected server: [%s] vote: NO", suspectServerId));
+                    LOG.info(String.format("INFO : Voting on suspected server: [%s] vote: NO", suspectServerId));
                 } 
                 catch (Exception e) {
-                    System.out.println("ERROR : Voting on suspected server is failed");
+                    // System.out.println("ERROR : Voting on suspected server is failed");
+                    LOG.error("Voting on suspected server is failed");
                 }
             }
         }
@@ -153,7 +169,8 @@ public class ConsensusJob implements Job {
         Integer votedBy = (int) (long)j_object.get("votedBy");
         Integer voteCount = serverState.getVoteSet().get(vote);
 
-        System.out.println(String.format("Receiving voting to kick [%s]: [%s] voted by server: [%s]", suspectServerId, vote, votedBy));
+        // System.out.println(String.format("Receiving voting to kick [%s]: [%s] voted by server: [%s]", suspectServerId, vote, votedBy));
+        LOG.info(String.format("Receiving voting to kick [%s]: [%s] voted by server: [%s]", suspectServerId, vote, votedBy));
 
         if (voteCount == null) {
             serverState.getVoteSet().put(vote, 1);
@@ -169,7 +186,8 @@ public class ConsensusJob implements Job {
         Leader leaderState = Leader.getInstance();
         Integer serverId = (int) (long)j_object.get("serverId");
 
-        System.out.println("Server down notification received. Removing server: " + serverId);
+        // System.out.println("Server down notification received. Removing server: " + serverId);
+        LOG.info("Server down notification received. Removing server: " + serverId);
 
         leaderState.removeRemoteChatRoomsClientsByServerId(serverId);
         serverState.removeServerInCountList(serverId);

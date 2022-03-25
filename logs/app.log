@@ -1,0 +1,111 @@
+2022-03-24 16:15:13,996 INFO  Server.Main - ------server started------
+2022-03-24 16:15:14,009 INFO  Server.Main - /127.0.0.1:5555
+2022-03-24 16:15:14,010 INFO  Server.Main - TCP Server waiting for coordination on port 5555
+2022-03-24 16:15:14,011 INFO  Server.Main - /127.0.0.1:4444
+2022-03-24 16:15:14,011 INFO  Server.Main - TCP Server waiting for clients on port 4444
+2022-03-24 16:15:14,014 INFO  Server.Main - leader election started
+2022-03-24 16:15:14,084 INFO  Server.Main - Failure Detection is running GOSSIP mode
+2022-03-24 16:15:14,109 WARN  heartbeat.GossipJob - Server s4 has failed
+2022-03-24 16:15:17,093 WARN  heartbeat.GossipJob - Server s2 has failed
+2022-03-24 16:15:20,094 WARN  heartbeat.GossipJob - Server s2 has failed
+2022-03-24 16:15:23,095 WARN  heartbeat.GossipJob - Server s4 has failed
+2022-03-24 16:15:26,093 INFO  heartbeat.GossipJob - Current coordinator is : 1
+2022-03-24 16:15:26,103 WARN  heartbeat.GossipJob - Server s4 has failed
+2022-03-24 16:15:29,091 INFO  heartbeat.GossipJob - Current coordinator is : 1
+2022-03-24 16:15:29,093 WARN  heartbeat.GossipJob - Server s2 has failed
+2022-03-24 16:15:32,091 INFO  heartbeat.GossipJob - Current coordinator is : 1
+2022-03-24 16:15:32,094 WARN  heartbeat.GossipJob - Server s4 has failed
+2022-03-24 16:15:35,092 INFO  heartbeat.GossipJob - Current coordinator is : 1
+2022-03-24 16:15:35,098 WARN  heartbeat.GossipJob - Server s2 has failed
+2022-03-24 16:15:38,091 INFO  heartbeat.GossipJob - Current coordinator is : 1
+2022-03-24 16:15:38,099 WARN  heartbeat.GossipJob - Server s3 has failed
+2022-03-24 16:15:41,103 INFO  heartbeat.GossipJob - Current coordinator is : 1
+2022-03-24 16:15:41,107 WARN  heartbeat.GossipJob - Server s4 has failed
+2022-03-24 16:29:17,315 INFO  Server.Main - ------server started------
+2022-03-24 16:29:17,324 INFO  Server.Main - /127.0.0.1:5555
+2022-03-24 16:29:17,324 INFO  Server.Main - TCP Server waiting for coordination on port 5555
+2022-03-24 16:29:17,324 INFO  Server.Main - /127.0.0.1:4444
+2022-03-24 16:29:17,325 INFO  Server.Main - TCP Server waiting for clients on port 4444
+2022-03-24 16:29:17,326 INFO  Server.Main - leader election started
+2022-03-24 16:29:17,393 INFO  Server.Main - Failure Detection is running GOSSIP mode
+2022-03-24 16:29:17,415 WARN  heartbeat.GossipJob - Server s3 has failed
+2022-03-24 16:29:17,417 INFO  heartbeat.ConsensusJob - [SKIP] There seems to be on going consensus at the moment, skip.
+2022-03-24 16:29:20,402 WARN  heartbeat.GossipJob - Server s2 has failed
+2022-03-24 16:29:23,401 WARN  heartbeat.GossipJob - Server s2 has failed
+2022-03-24 16:29:26,399 WARN  heartbeat.GossipJob - Server s3 has failed
+2022-03-24 16:29:27,406 INFO  heartbeat.ConsensusJob - [SKIP] There seems to be on going consensus at the moment, skip.
+2022-03-24 16:29:29,399 INFO  heartbeat.GossipJob - Current coordinator is : 1
+2022-03-24 16:29:29,401 WARN  heartbeat.GossipJob - Server s3 has failed
+2022-03-24 16:29:32,400 INFO  heartbeat.GossipJob - Current coordinator is : 1
+2022-03-24 16:29:32,402 WARN  heartbeat.GossipJob - Server s2 has failed
+2022-03-24 16:29:35,399 INFO  heartbeat.GossipJob - Current coordinator is : 1
+2022-03-24 16:29:35,401 WARN  heartbeat.GossipJob - Server s3 has failed
+2022-03-24 16:29:37,407 INFO  heartbeat.ConsensusJob - Leader calling for vote to kick suspect-server: {"suspectServerId":2,"type":"startVote","serverId":1}
+2022-03-24 16:29:38,399 INFO  heartbeat.GossipJob - Current coordinator is : 1
+2022-03-24 16:29:38,400 WARN  heartbeat.GossipJob - Server s3 has failed
+2022-03-24 16:29:41,398 INFO  heartbeat.GossipJob - Current coordinator is : 1
+2022-03-24 16:29:41,400 WARN  heartbeat.GossipJob - Server s4 has failed
+2022-03-24 16:29:42,412 INFO  heartbeat.ConsensusJob - INFO : Consensus votes to kick server [2]: {NO=0, YES=1}
+2022-03-24 16:29:42,414 INFO  heartbeat.ConsensusJob - Notify server 2 down. Removing...
+2022-03-24 16:29:42,420 INFO  heartbeat.ConsensusJob - Number of servers in group: 4
+2022-03-24 16:29:44,400 INFO  heartbeat.GossipJob - Current coordinator is : 1
+2022-03-24 16:29:44,403 WARN  heartbeat.GossipJob - Server s2 has failed
+2022-03-24 16:29:47,405 INFO  heartbeat.GossipJob - Current coordinator is : 1
+2022-03-24 16:29:47,406 WARN  heartbeat.GossipJob - Server s3 has failed
+2022-03-24 16:29:47,410 INFO  heartbeat.ConsensusJob - Leader calling for vote to kick suspect-server: {"suspectServerId":3,"type":"startVote","serverId":1}
+2022-03-24 16:29:50,400 INFO  heartbeat.GossipJob - Current coordinator is : 1
+2022-03-24 16:29:50,405 WARN  heartbeat.GossipJob - Server s4 has failed
+2022-03-24 16:29:52,411 INFO  heartbeat.ConsensusJob - INFO : Consensus votes to kick server [3]: {NO=0, YES=1}
+2022-03-24 16:29:52,422 INFO  heartbeat.ConsensusJob - Notify server 3 down. Removing...
+2022-03-24 16:29:52,424 INFO  heartbeat.ConsensusJob - Number of servers in group: 4
+2022-03-24 16:29:53,400 INFO  heartbeat.GossipJob - Current coordinator is : 1
+2022-03-24 16:29:53,404 WARN  heartbeat.GossipJob - Server s2 has failed
+2022-03-24 16:29:56,399 INFO  heartbeat.GossipJob - Current coordinator is : 1
+2022-03-24 16:29:56,401 WARN  heartbeat.GossipJob - Server s3 has failed
+2022-03-24 16:29:57,416 INFO  heartbeat.ConsensusJob - Leader calling for vote to kick suspect-server: {"suspectServerId":4,"type":"startVote","serverId":1}
+2022-03-24 16:29:59,399 INFO  heartbeat.GossipJob - Current coordinator is : 1
+2022-03-24 16:29:59,403 WARN  heartbeat.GossipJob - Server s3 has failed
+2022-03-24 17:22:41,767 INFO  Server.Main - ------server started------
+2022-03-24 17:22:41,781 INFO  Server.Main - /127.0.0.1:5555
+2022-03-24 17:22:41,781 INFO  Server.Main - TCP Server waiting for coordination on port 5555
+2022-03-24 17:22:41,782 INFO  Server.Main - /127.0.0.1:4444
+2022-03-24 17:22:41,782 INFO  Server.Main - TCP Server waiting for clients on port 4444
+2022-03-24 17:22:41,785 INFO  Server.Main - leader election started
+2022-03-24 17:22:41,919 INFO  Server.Main - Failure Detection is running GOSSIP mode
+2022-03-24 17:22:41,945 INFO  heartbeat.ConsensusJob - [SKIP] There seems to be on going consensus at the moment, skip.
+2022-03-24 17:22:41,949 WARN  MessagePassing.MessagePassing - server 2 is down
+2022-03-24 17:22:41,949 WARN  heartbeat.GossipJob - Server s2 has failed
+2022-03-24 17:22:41,950 WARN  MessagePassing.MessagePassing - server 3 is down
+2022-03-24 17:22:41,952 WARN  MessagePassing.MessagePassing - server 4 is down
+2022-03-24 17:22:41,952 INFO  consensus.election.FastBullyAlgorithm - IamUp messages sent
+2022-03-24 17:22:41,953 INFO  consensus.election.FastBullyAlgorithm - LOG  : Starting the waiting job [DefaultQuartzScheduler] : group_fast_bully.view_msg_timeout_job
+2022-03-24 17:22:44,931 WARN  heartbeat.GossipJob - Server s4 has failed
+2022-03-24 17:22:47,934 WARN  heartbeat.GossipJob - Server s3 has failed
+2022-03-24 17:22:50,929 WARN  heartbeat.GossipJob - Server s2 has failed
+2022-03-24 17:22:51,938 INFO  heartbeat.ConsensusJob - [SKIP] There seems to be on going consensus at the moment, skip.
+2022-03-24 17:22:51,976 INFO  consensus.election.timeout.MessageTimeout - Job was interrupted...
+2022-03-24 17:22:51,976 INFO  consensus.election.FastBullyAlgorithm - LOG  : Job [group_fast_bully.view_msg_timeout_job] get interrupted from [DefaultQuartzScheduler]
+2022-03-24 17:22:51,987 INFO  consensus.election.FastBullyAlgorithm - coordinator message sent [coordinatorViewTimeout] with leader as 1
+2022-03-24 17:22:51,989 INFO  consensus.election.FastBullyAlgorithm - accepting new leader server 1
+2022-03-24 17:22:53,928 INFO  heartbeat.GossipJob - Current coordinator is : 1
+2022-03-24 17:22:53,932 WARN  heartbeat.GossipJob - Server s3 has failed
+2022-03-24 17:22:56,926 INFO  heartbeat.GossipJob - Current coordinator is : 1
+2022-03-24 17:22:56,928 WARN  heartbeat.GossipJob - Server s4 has failed
+2022-03-24 17:22:59,925 INFO  heartbeat.GossipJob - Current coordinator is : 1
+2022-03-24 17:22:59,929 WARN  heartbeat.GossipJob - Server s3 has failed
+2022-03-24 17:23:01,936 INFO  heartbeat.ConsensusJob - Leader calling for vote to kick suspect-server: {"suspectServerId":2,"type":"startVote","serverId":1}
+2022-03-24 17:23:02,925 INFO  heartbeat.GossipJob - Current coordinator is : 1
+2022-03-24 17:23:02,927 WARN  heartbeat.GossipJob - Server s4 has failed
+2022-03-24 17:23:05,927 INFO  heartbeat.GossipJob - Current coordinator is : 1
+2022-03-24 17:23:05,932 WARN  heartbeat.GossipJob - Server s3 has failed
+2022-03-24 17:23:06,937 INFO  heartbeat.ConsensusJob - INFO : Consensus votes to kick server [2]: {NO=0, YES=1}
+2022-03-24 17:23:06,937 INFO  heartbeat.ConsensusJob - Notify server 2 down. Removing...
+2022-03-24 17:23:06,937 INFO  heartbeat.ConsensusJob - Number of servers in group: 4
+2022-03-24 17:23:08,928 INFO  heartbeat.GossipJob - Current coordinator is : 1
+2022-03-24 17:23:08,934 WARN  heartbeat.GossipJob - Server s2 has failed
+2022-03-24 17:23:11,927 INFO  heartbeat.GossipJob - Current coordinator is : 1
+2022-03-24 17:23:11,929 WARN  heartbeat.GossipJob - Server s3 has failed
+2022-03-24 17:23:11,935 WARN  MessagePassing.MessagePassing - server 2 is down
+2022-03-24 17:23:11,935 INFO  heartbeat.ConsensusJob - Leader calling for vote to kick suspect-server: {"suspectServerId":3,"type":"startVote","serverId":1}
+2022-03-24 17:23:14,927 INFO  heartbeat.GossipJob - Current coordinator is : 1
+2022-03-24 17:23:14,931 WARN  heartbeat.GossipJob - Server s2 has failed
