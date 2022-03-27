@@ -25,6 +25,7 @@ public class Server {
     private final ConcurrentHashMap<Integer, Integer> heartbeatCountList = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<Integer, String> suspectList = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, Integer> voteSet = new ConcurrentHashMap<>();
+    private ArrayList<Integer> upServers = new ArrayList<Integer>();
 
     private AtomicBoolean ongoingElection = new AtomicBoolean(false);;
     private AtomicBoolean answerMessageReceived = new AtomicBoolean(false);;
@@ -260,8 +261,20 @@ public class Server {
         return voteSet;
     }
 
-    public void removeServerInAllServers(Integer serverId){
-        allServers.remove(serverId);
+    public void removeServerInUpServers(Integer serverId){
+        upServers.remove(serverId);
+    }
+
+    public void setUpServer(String upServer) {
+        upServers.add(Integer.parseInt(upServer));
+    }
+
+    public void downServer(Integer serverId) {
+        upServers.remove(serverId);
+    }
+
+    public ArrayList<Integer> getUpservers(){
+        return upServers;
     }
 }
 

@@ -170,10 +170,13 @@ public class ClientThread implements Runnable {
         while (!Server.getInstance().getLeaderUpdateComplete()) {
             Thread.sleep(1000);
         }
-
+        LOG.info("Check ======================");
         if (Objects.equals(Leader.getInstance().getLeaderID(), Server.getInstance().getServerID())) {
             tempRoomList = Leader.getInstance().getRoomIDList();
-
+            LOG.info(tempRoomList);
+            LOG.info("Check 11111 ======================");
+            // LOG.info("message");
+            // while
         } else {
             MessagePassing.sendToLeader(
                     ServerMessage.listRequest(
@@ -182,7 +185,7 @@ public class ClientThread implements Runnable {
                             Server.getInstance().getServerID())
 
             );
-
+            
             synchronized (this) {
                 while (tempRoomList == null) {
                     this.wait(7000);

@@ -6,6 +6,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.quartz.*;
+
+import Server.Room;
 import Server.Server;
 import Server.ServerInfo;
 import Server.ServerMessage;
@@ -62,7 +64,11 @@ public class ConsensusJob implements Job {
             }
 
             ArrayList<ServerInfo> serverList = new ArrayList<>();
-            for (Integer serverid : serverState.getAllServers().keySet()) {
+            // for (Integer serverid : serverState.getAllServers().keySet()) {
+            for (Integer serverid : serverState.getUpservers()){
+            // for (Room serverInfo : serverState.getRoomList().values()){
+            //     Integer serverid = serverInfo.getServerIdInt();
+        
                 if (!serverid.equals(serverState.getSelfIdInt()) && serverState.getSuspectList().get(serverid).equals("NOT_SUSPECTED")) {
                     serverList.add(serverState.getAllServers().get(serverid));
                 }
@@ -107,6 +113,9 @@ public class ConsensusJob implements Job {
                         leaderState.removeRemoteChatRoomsClientsByServerId(suspectServerId);
                         serverState.removeServerInCountList(suspectServerId);
                         serverState.removeServerInSuspectList(suspectServerId);
+                        serverState.downServer(suspectServerId);
+                        // serverState.removeServerInAllServers(suspectServerId);
+                        LOG.info("remove +++++++++++++++++++++");
 
                     } catch (Exception e) {
                         // System.out.println("ERROR : " + suspectServerId + "Removing is failed");
@@ -192,6 +201,8 @@ public class ConsensusJob implements Job {
         leaderState.removeRemoteChatRoomsClientsByServerId(serverId);
         serverState.removeServerInCountList(serverId);
         serverState.removeServerInSuspectList(serverId);
+        // serverState.removeServerInAllServers(serverId);
+        serverState.downServer(serverId);
     }
 
 }

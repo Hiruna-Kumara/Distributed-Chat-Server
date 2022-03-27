@@ -207,9 +207,12 @@ public class FastBullyAlgorithm implements Runnable{
 
         ArrayList<Room> roomList = new ArrayList<>();
         roomList.addAll(Server.getInstance().getRoomList().values());
+        LOG.info(roomList);
         if(Integer.parseInt(Server.getInstance().getServerID()) == Integer.parseInt(serverID)) {
             Leader.getInstance().updateLeader(Server.getInstance().getServerID(), Server.getInstance().getClientIDList(), roomList);
             Server.getInstance().setLeaderUpdateComplete(true);
+            LOG.info(Server.getInstance().getServerID());
+            LOG.info(Server.getInstance().getClientIDList());
         }
         else{
             if(Integer.parseInt(Server.getInstance().getServerID()) < Integer.parseInt(serverID)){
@@ -297,7 +300,7 @@ public class FastBullyAlgorithm implements Runnable{
                                 .withIdentity(Constant.ELECTION_TRIGGER, groupId)
                                 .startAt(DateBuilder.futureDate(Math.toIntExact(timeout), DateBuilder.IntervalUnit.SECOND))
                                 .build();
-                scheduler.start();
+                // scheduler.start();
                 scheduler.scheduleJob(jobDetail, simpleTrigger);
             }
 
@@ -453,17 +456,18 @@ public class FastBullyAlgorithm implements Runnable{
         Server.getInstance().setViewMessageReceived(true);
         Server.getInstance().setLeaderUpdateComplete(false);
         String leaderServerID = jsonMessage.get("serverID").toString();
-        Integer leadercheck = 0;
-        if(Leader.getInstance().getLeaderID() != null){
-            leadercheck = Integer.parseInt(Leader.getInstance().getLeaderID());
-        }
-        if(Integer.parseInt(leaderServerID) >= leadercheck){
-            String leaderAddress = jsonMessage.get("address").toString();
-            Integer leaderServerPort = Integer.parseInt( jsonMessage.get("serverPort").toString());
-            Integer leaderClientPort = Integer.parseInt( jsonMessage.get("clientPort").toString());
-            leader = new ServerInfo(leaderServerID, leaderAddress, leaderServerPort, leaderClientPort);
-            acceptNewLeader(leaderServerID);
-        }
+        acceptNewLeader(leaderServerID);
+        // Integer leadercheck = 0;
+        // if(Leader.getInstance().getLeaderID() != null){
+        //     leadercheck = Integer.parseInt(Leader.getInstance().getLeaderID());
+        // }
+        // if(Integer.parseInt(leaderServerID) >= leadercheck){
+        //     String leaderAddress = jsonMessage.get("address").toString();
+        //     Integer leaderServerPort = Integer.parseInt( jsonMessage.get("serverPort").toString());
+        //     Integer leaderClientPort = Integer.parseInt( jsonMessage.get("clientPort").toString());
+        //     leader = new ServerInfo(leaderServerID, leaderAddress, leaderServerPort, leaderClientPort);
+        //     acceptNewLeader(leaderServerID);
+        // }
     }
 
     @Override
@@ -525,6 +529,7 @@ public class FastBullyAlgorithm implements Runnable{
                 break;
             case "IamUp":
                 FastBullyAlgorithm sendViewFBA = new FastBullyAlgorithm("sendView");
+                Server.getInstance().setUpServer(jsonObject.get("serverID").toString());;
                 new Thread(sendViewFBA).start();
 //                sendViewFBA.sendViewMessage();
                 break;
@@ -534,6 +539,7 @@ public class FastBullyAlgorithm implements Runnable{
 //                }
 //                if(Server.getInstance().getOngoingElection()){
                 FastBullyAlgorithm coordinatorFBA = new FastBullyAlgorithm("coordinator");
+                Server.getInstance().setUpServer(jsonObject.get("serverID").toString());
                 new Thread(coordinatorFBA).start();
 //                coordinatorFBA.sendCoordinatorMessage(coordinatorFBA.option);
 //                }

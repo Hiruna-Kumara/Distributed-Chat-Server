@@ -8,6 +8,7 @@ import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
 import Server.ServerInfo;
 import Server.ServerMessage;
+import Server.Room;
 import Server.Server;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
@@ -39,9 +40,25 @@ public class GossipJob implements Job{
         String aliveErrorFactor = dataMap.get("aliveErrorFactor").toString();
 
         // Update heartbeat vector and get the suspect list of each server
-        for (ServerInfo serverInfo : serverState.getAllServers().values()){
-            Integer serverId = serverInfo.getServerIdInt();
+        // for (ServerInfo serverInfo : serverState.getAllServers().values()){
+        //     Integer serverId = serverInfo.getServerIdInt();
+        LOG.info("IN the %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+        
+        ArrayList<Integer> tempServers = new ArrayList<Integer>();
+        tempServers.addAll(serverState.getUpservers());
+        tempServers.add(serverState.getSelfIdInt());
+        for (Integer serverId : tempServers){
+
+            // Integer serverId = serverInfo.getServerIdInt();
+
+            
             Integer myServerId = serverState.getSelfIdInt();
+
+            LOG.info("starting ##############");
+            LOG.info(Integer.toString(serverId)+"serverID");
+            LOG.info("available servers %%%%%%%%%%%%%%%%%%%%%%");
+            LOG.info(Integer.toString(serverState.getAllServers().size())+" number of current servers");
+            LOG.info("finish ****************");
 
             // get current heart beat count of a server
             Integer count = serverState.getHeartbeatCountList().get(serverId);
@@ -96,11 +113,16 @@ public class GossipJob implements Job{
             Integer serverIndex = ThreadLocalRandom.current().nextInt(numOfServers - 1);
             ArrayList<ServerInfo> remoteServer = new ArrayList<>();
 
-            for (ServerInfo server : serverState.getAllServers().values()) {
-                Integer serverId = server.getServerIdInt();
+            // for (ServerInfo server : serverState.getAllServers().values()) {
+            
+        // for (Room server : serverState.getRoomList().values()){
+                // Integer serverId = server.getServerIdInt();
+            for (Integer serverId : serverState.getUpservers()){
                 Integer myServerId = serverState.getSelfIdInt();
+                // ServerInfo server1 = serverState.getAllServers().get(serverId);
                 if (!serverId.equals(myServerId)) {
-                    remoteServer.add(server);
+                    ServerInfo server1 = serverState.getAllServers().get(serverId);
+                    remoteServer.add(server1);
                 }
             }
 

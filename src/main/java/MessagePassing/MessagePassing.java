@@ -95,6 +95,8 @@ public class MessagePassing
                 .get( Leader.getInstance().getLeaderID() );
         Socket socket = new Socket(destServerInfo.getAddress(),
                 destServerInfo.getServerPort());
+        LOG.info(socket.getOutputStream());
+        LOG.info("*******************");
         DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
         dataOutputStream.write((obj.toJSONString() + "\n").getBytes( StandardCharsets.UTF_8));
         dataOutputStream.flush();

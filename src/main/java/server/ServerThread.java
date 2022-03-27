@@ -110,7 +110,9 @@ public class ServerThread implements Runnable{
                         String serverID = jsonObject.get("serverID").toString();
 
                         ServerInfo destServerInfo = Server.getInstance().getOtherServers().get(serverID);
-
+                        LOG.info("Check List ##################################");
+                        LOG.info(Leader.getInstance().getRoomIDList());
+                        LOG.info(destServerInfo.getServerID());
                         MessagePassing.sendServer(
                                 ServerMessage.listResponse(Leader.getInstance().getRoomIDList(), threadID),
                                 destServerInfo
