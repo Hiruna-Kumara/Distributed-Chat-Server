@@ -297,7 +297,7 @@ public class FastBullyAlgorithm implements Runnable{
                                 .withIdentity(Constant.ELECTION_TRIGGER, groupId)
                                 .startAt(DateBuilder.futureDate(Math.toIntExact(timeout), DateBuilder.IntervalUnit.SECOND))
                                 .build();
-                scheduler.start();
+//                scheduler.start();
                 scheduler.scheduleJob(jobDetail, simpleTrigger);
             }
 
@@ -453,17 +453,18 @@ public class FastBullyAlgorithm implements Runnable{
         Server.getInstance().setViewMessageReceived(true);
         Server.getInstance().setLeaderUpdateComplete(false);
         String leaderServerID = jsonMessage.get("serverID").toString();
-        Integer leadercheck = 0;
-        if(Leader.getInstance().getLeaderID() != null){
-            leadercheck = Integer.parseInt(Leader.getInstance().getLeaderID());
-        }
-        if(Integer.parseInt(leaderServerID) >= leadercheck){
-            String leaderAddress = jsonMessage.get("address").toString();
-            Integer leaderServerPort = Integer.parseInt( jsonMessage.get("serverPort").toString());
-            Integer leaderClientPort = Integer.parseInt( jsonMessage.get("clientPort").toString());
-            leader = new ServerInfo(leaderServerID, leaderAddress, leaderServerPort, leaderClientPort);
-            acceptNewLeader(leaderServerID);
-        }
+        acceptNewLeader(leaderServerID);
+//        Integer leadercheck = 0;
+//        if(Leader.getInstance().getLeaderID() != null){
+//            leadercheck = Integer.parseInt(Leader.getInstance().getLeaderID());
+//        }
+//        if(Integer.parseInt(leaderServerID) >= leadercheck){
+//            String leaderAddress = jsonMessage.get("address").toString();
+//            Integer leaderServerPort = Integer.parseInt( jsonMessage.get("serverPort").toString());
+//            Integer leaderClientPort = Integer.parseInt( jsonMessage.get("clientPort").toString());
+//            leader = new ServerInfo(leaderServerID, leaderAddress, leaderServerPort, leaderClientPort);
+//            acceptNewLeader(leaderServerID);
+//        }
     }
 
     @Override
