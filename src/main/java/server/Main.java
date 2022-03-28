@@ -64,7 +64,8 @@ public class Main {
 
             // bind SocketAddress with inetAddress and port
             SocketAddress endPointCoordination = new InetSocketAddress(
-                    Server.getInstance().getAddress(),
+//                    Server.getInstance().getAddress(),
+                    "0.0.0.0",
                     Server.getInstance().getServerPort()
             );
             serverCoordinationSocket.bind( endPointCoordination );
@@ -83,7 +84,8 @@ public class Main {
 
             // bind SocketAddress with inetAddress and port
             SocketAddress endPointClient = new InetSocketAddress(
-                    Server.getInstance().getAddress(),
+//                    Server.getInstance().getAddress(),
+                    "0.0.0.0",
                     Server.getInstance().getClientPort()
             );
             serverClientsSocket.bind(endPointClient);
@@ -110,11 +112,11 @@ public class Main {
              Maintain consensus using Bully Algorithm
              **/
             // T2
-            Server.getInstance().setElectionAnswerTimeout(10L);
+            Server.getInstance().setElectionAnswerTimeout(100L);
             // T3
-            Server.getInstance().setElectionCoordinatorTimeout(10L);
+            Server.getInstance().setElectionCoordinatorTimeout(100L);
             // T4
-            Server.getInstance().setElectionNominationTimeout(30L);
+            Server.getInstance().setElectionNominationTimeout(300L);
             initiateCoordinator();
 
 
@@ -194,7 +196,7 @@ public class Main {
             JobDetail gossipJob = JobBuilder.newJob(GossipJob.class)
                     .withIdentity("GOSSIPJOB", "group1").build();
 
-            gossipJob.getJobDataMap().put("aliveErrorFactor", 5);
+            gossipJob.getJobDataMap().put("aliveErrorFactor", 7);
 
             Trigger gossipTrigger = TriggerBuilder
                     .newTrigger()
