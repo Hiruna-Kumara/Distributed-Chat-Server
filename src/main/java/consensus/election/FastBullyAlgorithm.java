@@ -110,10 +110,12 @@ public class FastBullyAlgorithm implements Runnable{
             ServerInfo highestPriorityCandidate = Server.getInstance().getHighestPriorityCandidate();
             try {
                 MessagePassing.sendServer(ServerMessage.nominationMessage(), highestPriorityCandidate);
-                System.out.println("INFO : sending nomination to server " + highestPriorityCandidate.getServerID()+" after answer message timeout");
+//                System.out.println("INFO : sending nomination to server " + highestPriorityCandidate.getServerID()+" after answer message timeout");
+                LOG.info("sending nomination to server " + highestPriorityCandidate.getServerID()+" after answer message timeout");
             } catch (IOException e) {
 //                e.printStackTrace();
-                System.out.println("WARN : unable to send the nomination message to server "+highestPriorityCandidate.getServerID());
+//                System.out.println("WARN : unable to send the nomination message to server "+highestPriorityCandidate.getServerID());
+                LOG.warn("unable to send the nomination message to server "+highestPriorityCandidate.getServerID());
                 Server.getInstance().removeTempCandidateServer(highestPriorityCandidate);       //NOT SURE WHETHER REMOVING SHOULD BE DONE IN HERE OR GOSSIP?
             }
             startWaitingForCoordinatorMessage(Server.getInstance().getElectionCoordinatorTimeout());
@@ -237,6 +239,7 @@ public class FastBullyAlgorithm implements Runnable{
     }
 
     private void restartElection() {
+        LOG.info("Restarting election");
         stopElection();
         startElection();
     }

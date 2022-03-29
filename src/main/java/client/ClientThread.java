@@ -78,7 +78,7 @@ public class ClientThread implements Runnable {
                 Thread.sleep(1000);
             }
             /////////////// JUST A TEST - MUST REMOVE/////////////////////////////////
-            System.out.println(Leader.getInstance().getLeaderID());
+//            System.out.println(Leader.getInstance().getLeaderID());
             LOG.info(Leader.getInstance().getLeaderID());
             ConcurrentHashMap<String, List<Room>> globalRoomList = Leader.getInstance().getGlobalRoomList(); // server_id,
                                                                                                              // cliient_id
@@ -90,8 +90,8 @@ public class ClientThread implements Runnable {
             for (String key : globalRoomList.keySet()) {
                 List<Room> r_list = globalRoomList.get(key);
                 for (Room r : r_list) {
-                    System.out.println(key);
-                    System.out.println(r.getRoomID());
+//                    System.out.println(key);
+//                    System.out.println(r.getRoomID());
                     LOG.info(key);
                     LOG.info(r.getRoomID());
                 }
@@ -99,14 +99,14 @@ public class ClientThread implements Runnable {
             for (String key : globalClientList.keySet()) {
                 List<String> c_list = globalClientList.get(key);
                 for (String c : c_list) {
-                    System.out.println(key);
-                    System.out.println(c);
+//                    System.out.println(key);
+//                    System.out.println(c);
                     LOG.info(key);
                     LOG.info(c);
                 }
             }
 
-            System.out.println(Server.getInstance().getLeaderUpdateComplete());
+//            System.out.println(Server.getInstance().getLeaderUpdateComplete());
             LOG.info(Server.getInstance().getLeaderUpdateComplete());
             ////////////////////////////////////////////////////////////////////////////
             if (Objects.equals(Server.getInstance().getServerID(), Leader.getInstance().getLeaderID())) {
@@ -192,7 +192,7 @@ public class ClientThread implements Runnable {
         }
 
         if (tempRoomList != null) {
-            System.out.println("INFO : Recieved rooms in the system :" + tempRoomList);
+//            System.out.println("INFO : Recieved rooms in the system :" + tempRoomList);
             LOG.info("INFO : Recieved rooms in the system :" + tempRoomList);
             MessagePassing.sendClient(
                     ClientMessage.listReply(tempRoomList),
@@ -209,7 +209,7 @@ public class ClientThread implements Runnable {
         List<String> participantsList = new ArrayList<>(clientList.keySet());
         String ownerClientID = room.getOwnerClientID();
 
-        System.out.println("LOG  : participants in room [" + roomID + "] : " + participantsList);
+//        System.out.println("LOG  : participants in room [" + roomID + "] : " + participantsList);
         LOG.info("LOG  : participants in room [" + roomID + "] : " + participantsList);
         MessagePassing.sendClient(
                 ClientMessage.whoReply(
@@ -230,9 +230,9 @@ public class ClientThread implements Runnable {
             if (Objects.equals(Leader.getInstance().getLeaderID(), Server.getInstance().getServerID())) {
                 boolean roomIDTaken = Leader.getInstance().isRoomIDTaken(roomid);
                 isRoomCreationApproved = roomIDTaken ? 0:1;
-                System.out.println("INFO : Room '" + roomid +
-                        "' creation request from client " + client.getClientID() +
-                        " is" + (roomIDTaken ? "not" : " ") + "approved");
+//                System.out.println("INFO : Room '" + roomid +
+//                        "' creation request from client " + client.getClientID() +
+//                        " is" + (roomIDTaken ? "not" : " ") + "approved");
                 LOG.info("INFO : Room '" + roomid +
                 "' creation request from client " + client.getClientID() +
                 " is" + (roomIDTaken ? "not" : " ") + "approved");
@@ -256,7 +256,7 @@ public class ClientThread implements Runnable {
                 }
             }
             if(isRoomCreationApproved==1){
-                System.out.println( "INFO : Received correct room ID :" + roomid );
+//                System.out.println( "INFO : Received correct room ID :" + roomid );
                 LOG.info("INFO : Received correct room ID :" + roomid);
 
                 String formerRoomID = client.getRoomID();
@@ -301,7 +301,7 @@ public class ClientThread implements Runnable {
                 }
 
             }else if(isRoomCreationApproved==0){
-                System.out.println("WARN : Room id [" + roomid + "] already in use");
+//                System.out.println("WARN : Room id [" + roomid + "] already in use");
                 LOG.warn("Room id [" + roomid + "] already in use");
                 synchronized (clientSocket) {
                     MessagePassing.sendClient(ClientMessage.createRoomReply(
@@ -312,7 +312,7 @@ public class ClientThread implements Runnable {
             }
             isRoomCreationApproved = -1;
         }else{
-            System.out.println("WARN : Received wrong room ID type or client already owns a room [" + roomid + "]");
+//            System.out.println("WARN : Received wrong room ID type or client already owns a room [" + roomid + "]");
             LOG.warn("Received wrong room ID type or client already owns a room [" + roomid + "]");
             synchronized (clientSocket) {
                 MessagePassing.sendClient(ClientMessage.createRoomReply(
@@ -342,7 +342,7 @@ public class ClientThread implements Runnable {
                     //update leader server
                     MessagePassing.sendToLeader(ServerMessage.deleteRoomRequest(serverID, client.getClientID(), roomID, mainHallID));
                 }
-                System.out.println("INFO : room [" + roomID + "] was deleted by : " + client.getClientID());
+//                System.out.println("INFO : room [" + roomID + "] was deleted by : " + client.getClientID());
                 LOG.info("room [" + roomID + "] was deleted by : " + client.getClientID());
 
                 HashMap<String, Client> formerClients = Server.getInstance().getRoomList().get(roomID).getClientList();
@@ -369,12 +369,12 @@ public class ClientThread implements Runnable {
                 MessagePassing.sendClient(ClientMessage.deleteRoomReply(roomID, "true"), clientSocket);
             }else{
                 MessagePassing.sendClient(ClientMessage.deleteRoomReply(roomID, "false"), clientSocket);
-                System.out.println("WARN : Requesting client [" + client.getClientID() + "] does not own the room ID [" + roomID + "]");
+//                System.out.println("WARN : Requesting client [" + client.getClientID() + "] does not own the room ID [" + roomID + "]");
                 LOG.warn("Requesting client [" + client.getClientID() + "] does not own the room ID [" + roomID + "]");
             }
         }else{
             MessagePassing.sendClient(ClientMessage.deleteRoomReply(roomID, "false"), clientSocket);
-            System.out.println("WARN : Received room ID [" + roomID + "] does not exist");
+//            System.out.println("WARN : Received room ID [" + roomID + "] does not exist");
             LOG.warn("WARN : Received room ID [" + roomID + "] does not exist");
         }
     }
@@ -403,7 +403,7 @@ public class ClientThread implements Runnable {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            System.out.println("INFO : Deleted room before " + client.getClientID() + " quit");
+//            System.out.println("INFO : Deleted room before " + client.getClientID() + " quit");
             LOG.info("Deleted room before " + client.getClientID() + " quit");
         }
 
@@ -434,7 +434,7 @@ public class ClientThread implements Runnable {
             clientSocket.close();
         }
         quit = true;
-        System.out.println("INFO : " + client.getClientID() + " quit");
+//        System.out.println("INFO : " + client.getClientID() + " quit");
         LOG.info(client.getClientID() + " quit");
     }
 
@@ -443,7 +443,7 @@ public class ClientThread implements Runnable {
         String formerRoomID = client.getRoomID();
 
         if(client.isRoomOwner()){
-            System.out.println("WARN : Join room denied, Client" + client.getClientID() + " Owns a room");
+//            System.out.println("WARN : Join room denied, Client" + client.getClientID() + " Owns a room");
             LOG.warn("Join room denied, Client" + client.getClientID() + " Owns a room");
 
             MessagePassing.sendClient(
@@ -476,7 +476,7 @@ public class ClientThread implements Runnable {
             Server.getInstance().getRoomList().get(formerRoomID).removeClient(client.getClientID());
             Server.getInstance().getRoomList().get(roomID).addClient(client);
 
-            System.out.println("INFO : client [" + client.getClientID() + "] joined room :" + roomID);
+//            System.out.println("INFO : client [" + client.getClientID() + "] joined room :" + roomID);
             LOG.info("client [" + client.getClientID() + "] joined room :" + roomID);
 
             // creating broadcast list
@@ -521,7 +521,7 @@ public class ClientThread implements Runnable {
                     approvedJoinRoomServerHostAddress = serverInfoOfTargetRoom.getAddress();
                     approvedJoinRoomServerPort = String.valueOf(serverInfoOfTargetRoom.getClientPort());
                 }
-                System.out.println("INFO : Received response for route request for join room (Self is Leader)");
+//                System.out.println("INFO : Received response for route request for join room (Self is Leader)");
                 LOG.info("Received response for route request for join room (Self is Leader)");
 
 
@@ -539,26 +539,26 @@ public class ClientThread implements Runnable {
 
                 synchronized(this){
                     while (isJoinRoomApproved == -1) {
-                        System.out.println("INFO : Wait until server approve route on Join room request");
+//                        System.out.println("INFO : Wait until server approve route on Join room request");
                         LOG.info("Wait until server approve route on Join room request");
                         this.wait(7000);
                         //wait for response
                     }
                 }
                 
-                System.out.println("INFO : Received response for route request for join room");
+//                System.out.println("INFO : Received response for route request for join room");
                 LOG.info("Received response for route request for join room");
             }
 
             if(isJoinRoomApproved == 1){
                 //broadcast to former room
                 Server.getInstance().removeClient(client.getClientID(), formerRoomID, Thread.currentThread().getId());
-                System.out.println("INFO : client [" + client.getClientID() + "] left room :" + formerRoomID);
+//                System.out.println("INFO : client [" + client.getClientID() + "] left room :" + formerRoomID);
                 LOG.info("client [" + client.getClientID() + "] left room :" + formerRoomID);
             
                 //create broadcast list
                 HashMap<String, Client> clientListOld = Server.getInstance().getRoomList().get(formerRoomID).getClientList();
-                System.out.println("INFO : Send broadcast to former room in local server");
+//                System.out.println("INFO : Send broadcast to former room in local server");
                 LOG.info("Send broadcast to former room in local server");
 
                 ArrayList<Socket> sockets = new ArrayList<>();
@@ -581,13 +581,13 @@ public class ClientThread implements Runnable {
                         approvedJoinRoomServerPort)
                     , clientSocket);
     
-                System.out.println("INFO : Route Message Sent to Client");
+//                System.out.println("INFO : Route Message Sent to Client");
                 LOG.info("Route Message Sent to Client");
                 quit = true;
             
             } else if(isJoinRoomApproved ==0) { // Room not found on system
 
-                System.out.println("WARN : Received room ID ["+ roomID + "] does not exist");
+//                System.out.println("WARN : Received room ID ["+ roomID + "] does not exist");
                 LOG.warn("Received room ID ["+ roomID + "] does not exist");;
 
                 MessagePassing.sendClient(
@@ -687,7 +687,7 @@ public class ClientThread implements Runnable {
         } catch (IOException | ParseException | InterruptedException e) {
             // TODO - Add output string
             // e.printStackTrace();
-            System.out.println("WARN : client abruptly disconnected");
+//            System.out.println("WARN : client abruptly disconnected");
             LOG.warn("client abruptly disconnected");
         }
     }

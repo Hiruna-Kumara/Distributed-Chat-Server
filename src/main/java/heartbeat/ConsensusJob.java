@@ -135,7 +135,7 @@ public class ConsensusJob implements Job {
                 JSONObject answerVoteMessage = new JSONObject();
                 answerVoteMessage = serverMessage.answerVoteMessage(suspectServerId, "YES", mySeverId);
                 try {
-                    MessagePassing.sendServer(answerVoteMessage, serverState.getAllServers().get(Leader.getInstance().getLeaderID()));
+                    MessagePassing.sendServer(answerVoteMessage, serverState.getAllServers().get(Leader.getInstance().getLeaderIDInt()));
                     // System.out.println(String.format("INFO : Voting on suspected server: [%s] vote: YES", suspectServerId));
                     LOG.info(String.format("INFO : Voting on suspected server: [%s] vote: YES", suspectServerId));
                 } 
@@ -149,7 +149,7 @@ public class ConsensusJob implements Job {
                 JSONObject answerVoteMessage = new JSONObject();
                 answerVoteMessage = serverMessage.answerVoteMessage(suspectServerId, "NO", mySeverId);
                 try {
-                    MessagePassing.sendServer(answerVoteMessage, serverState.getAllServers().get(Leader.getInstance().getLeaderID()));
+                    MessagePassing.sendServer(answerVoteMessage, serverState.getAllServers().get(Leader.getInstance().getLeaderIDInt()));
                     // System.out.println(String.format("INFO : Voting on suspected server: [%s] vote: NO", suspectServerId));
                     LOG.info(String.format("INFO : Voting on suspected server: [%s] vote: NO", suspectServerId));
                 } 

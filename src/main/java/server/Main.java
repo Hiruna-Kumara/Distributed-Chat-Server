@@ -179,15 +179,12 @@ public class Main {
     private static void initiateCoordinator() {
         // System.out.println("INFO : leader election started");
         LOG.info("leader election started");
-        if (Server.getInstance().getOtherServers().isEmpty()){
-            //self is the leader
-        }
-        else{
-                FastBullyAlgorithm IamUp_FBA = new FastBullyAlgorithm("IamUp");
-                new Thread(IamUp_FBA).start();
-//            IamUp_FBA.sendIamUpMessage();
+
+        FastBullyAlgorithm IamUp_FBA = new FastBullyAlgorithm("IamUp");
+        new Thread(IamUp_FBA).start();
+//      IamUp_FBA.sendIamUpMessage();
             
-        }
+
     }
 
     private static void startGossip() {
