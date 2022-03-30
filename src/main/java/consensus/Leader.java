@@ -93,13 +93,15 @@ public class Leader {
     }
 
     public synchronized void addToGlobalClientAndRoomList(String clientID, String serverID, String roomID){
-        globalClientList.get(serverID).add(clientID);
-        for(Room room: globalRoomList.get(serverID)){
-            if(Objects.equals(room.getRoomID(), roomID)){
-                room.addClient(new Client(clientID, roomID, null));
-                break;
+        if(globalClientList.get(serverID)!=null){
+            globalClientList.get(serverID).add(clientID);
+            for(Room room: globalRoomList.get(serverID)){
+                if(Objects.equals(room.getRoomID(), roomID)){
+                    room.addClient(new Client(clientID, roomID, null));
+                    break;
+                }
             }
-        }
+        }  
     }
 
     // --------newly added
