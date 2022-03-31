@@ -152,6 +152,13 @@ public class GossipJob implements Job{
                 }
             }
         }
+        if (Leader.getInstance().getLeaderID()!=null){
+            if ((fromServer>Leader.getInstance().getLeaderIDInt())&& !Server.getInstance().getOngoingElection()){
+    //            Server.getInstance().setOngoingElection(true);
+    //            Leader.getInstance().reset();
+                FastBullyAlgorithm.initialize();
+            }
+        }
 
     }
 }

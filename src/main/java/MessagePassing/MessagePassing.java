@@ -67,12 +67,13 @@ public class MessagePassing
     //send message to server
     public static void sendServer( JSONObject obj, ServerInfo destServer) throws IOException
     {
+        if(destServer!=null){
         Socket socket = new Socket(destServer.getAddress(),
                 destServer.getServerPort());
         DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
         dataOutputStream.write((obj.toJSONString() + "\n").getBytes( StandardCharsets.UTF_8));
         dataOutputStream.flush();
-    }
+    }}
 
     //send broadcast message
     public static void sendServerBroadcast(JSONObject obj, ArrayList<ServerInfo> serverList) {
