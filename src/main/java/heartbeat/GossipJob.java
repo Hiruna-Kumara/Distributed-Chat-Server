@@ -3,6 +3,8 @@ package heartbeat;
 import consensus.Leader;
 import consensus.election.FastBullyAlgorithm;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
 import Server.ServerInfo;
 import Server.ServerMessage;
@@ -27,6 +29,8 @@ public class GossipJob implements Job{
     private Leader leaderState = Leader.getInstance();
     private ServerMessage serverMessage = ServerMessage.getInstance();
     //git
+
+    private static final Logger LOG = LogManager.getLogger(GossipJob.class);
     
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException{
@@ -72,7 +76,8 @@ public class GossipJob implements Job{
         if (serverState.getLeaderUpdateComplete()){
             
             Integer leaderServerId = leaderState.getLeaderIDInt();
-            System.out.println("Current coordinator is : " + leaderState.getLeaderID().toString());
+            // System.out.println("Current coordinator is : " + leaderState.getLeaderID().toString());
+            LOG.info("Current coordinator is : " + leaderState.getLeaderID().toString());
             
             // if the leader/coordinator server is in suspect list, start the election process
             if (serverState.getSuspectList().get(leaderServerId).equals("SUSPECTED")) {
@@ -105,10 +110,12 @@ public class GossipJob implements Job{
             gossipMessage = serverMessage.gossipMessage(serverState.getSelfIdInt(), heartbeatCountList);
             try {
                 MessagePassing.sendServer(gossipMessage,remoteServer.get(serverIndex));
-                System.out.println("INFO : Gossip heartbeat info to next peer s"+remoteServer.get(serverIndex).getServerID());
+                // System.out.println("INFO : Gossip heartbeat info to next peer s"+remoteServer.get(serverIndex).getServerID());
+                LOG.info("Gossip heartbeat info to next peer s"+remoteServer.get(serverIndex).getServerID());
             } 
             catch (Exception e){
-                System.out.println("WARN : Server s"+remoteServer.get(serverIndex).getServerID() + " has failed");
+                // System.out.println("WARN : Server s"+remoteServer.get(serverIndex).getServerID() + " has failed");
+                LOG.warn("Server s"+ remoteServer.get(serverIndex).getServerID() + " has failed");
             }
         }
 
@@ -121,7 +128,8 @@ public class GossipJob implements Job{
         HashMap<String, Long> gossipFromOthers = (HashMap<String, Long>) j_object.get("heartbeatCountList");
         Integer fromServer = (int) (long)j_object.get("serverId");
 
-        System.out.println(("Receiving gossip from server: [" + fromServer.toString() + "] gossipping: " + gossipFromOthers));
+        // System.out.println(("Receiving gossip from server: [" + fromServer.toString() + "] gossipping: " + gossipFromOthers));
+        LOG.info("Receiving gossip from server: [" + fromServer.toString() + "] gossipping: " + gossipFromOthers);
 
         //update the heartbeatcountlist by taking minimum
         for (String serverId : gossipFromOthers.keySet()) {
@@ -132,7 +140,8 @@ public class GossipJob implements Job{
             }
         }
 
-        System.out.println(("Current cluster heart beat state is: " + serverState.getHeartbeatCountList()));
+        // System.out.println(("Current cluster heart beat state is: " + serverState.getHeartbeatCountList()));
+        LOG.info("Current cluster heart beat state is: " + serverState.getHeartbeatCountList());
 
         if (serverState.getLeaderUpdateComplete() && Leader.getInstance().getLeaderID().equals(serverState.getServerID())) {
             if (serverState.getHeartbeatCountList().size() < gossipFromOthers.size()) {
@@ -141,6 +150,13 @@ public class GossipJob implements Job{
                         serverState.getSuspectList().put(Integer.parseInt(serverId), "SUSPECTED");
                     }
                 }
+            }
+        }
+        if (Leader.getInstance().getLeaderID()!=null){
+            if ((fromServer>Leader.getInstance().getLeaderIDInt())&& !Server.getInstance().getOngoingElection()){
+    //            Server.getInstance().setOngoingElection(true);
+    //            Leader.getInstance().reset();
+                FastBullyAlgorithm.initialize();
             }
         }
 

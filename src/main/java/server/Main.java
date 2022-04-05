@@ -5,6 +5,9 @@ import consensus.Leader;
 import consensus.election.FastBullyAlgorithm;
 import heartbeat.ConsensusJob;
 import heartbeat.GossipJob;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
 
@@ -19,6 +22,8 @@ import java.util.Arrays;
 import java.util.Scanner;
 
 public class Main {
+
+    private static final Logger LOG = LogManager.getLogger(Main.class);
 
     public static void main(String[] args) {
 
@@ -42,7 +47,8 @@ public class Main {
             server.addServer(selfID, params[0], params[1],  Integer.parseInt(params[3]),Integer.parseInt(params[2]));
         }
 
-        System.out.println("LOG  : ------server started------");
+        // System.out.println("LOG  : ------server started------");
+        LOG.info("------server started------");
 
         try {
             // throw exception if invalid server id provided
@@ -58,13 +64,17 @@ public class Main {
 
             // bind SocketAddress with inetAddress and port
             SocketAddress endPointCoordination = new InetSocketAddress(
-                    Server.getInstance().getAddress(),
+//                    Server.getInstance().getAddress(),
+                    "0.0.0.0",
                     Server.getInstance().getServerPort()
             );
             serverCoordinationSocket.bind( endPointCoordination );
-            System.out.println( serverCoordinationSocket.getLocalSocketAddress() );
-            System.out.println( "LOG  : TCP Server waiting for coordination on port " +
-                    serverCoordinationSocket.getLocalPort() ); // port open for coordination
+            // System.out.println( serverCoordinationSocket.getLocalSocketAddress() );
+            // System.out.println( "LOG  : TCP Server waiting for coordination on port " +
+            //         serverCoordinationSocket.getLocalPort() ); // port open for coordination
+
+            LOG.info(serverCoordinationSocket.getLocalSocketAddress());
+            LOG.info("TCP Server waiting for coordination on port " + serverCoordinationSocket.getLocalPort());
 
             /**
              Client socket
@@ -74,13 +84,17 @@ public class Main {
 
             // bind SocketAddress with inetAddress and port
             SocketAddress endPointClient = new InetSocketAddress(
-                    Server.getInstance().getAddress(),
+//                    Server.getInstance().getAddress(),
+                    "0.0.0.0",
                     Server.getInstance().getClientPort()
             );
             serverClientsSocket.bind(endPointClient);
-            System.out.println(serverClientsSocket.getLocalSocketAddress());
-            System.out.println("LOG  : TCP Server waiting for clients on port "+
-                    serverClientsSocket.getLocalPort()); // port open for clients
+            // System.out.println(serverClientsSocket.getLocalSocketAddress());
+            // System.out.println("LOG  : TCP Server waiting for clients on port "+
+            //         serverClientsSocket.getLocalPort()); // port open for clients
+
+            LOG.info(serverClientsSocket.getLocalSocketAddress());
+            LOG.info("TCP Server waiting for clients on port "+ serverClientsSocket.getLocalPort());
 
             /**
              Handle coordination
@@ -98,11 +112,11 @@ public class Main {
              Maintain consensus using Bully Algorithm
              **/
             // T2
-            Server.getInstance().setElectionAnswerTimeout(10L);
+            Server.getInstance().setElectionAnswerTimeout(100L);
             // T3
-            Server.getInstance().setElectionCoordinatorTimeout(10L);
+            Server.getInstance().setElectionCoordinatorTimeout(100L);
             // T4
-            Server.getInstance().setElectionNominationTimeout(30L);
+            Server.getInstance().setElectionNominationTimeout(300L);
             initiateCoordinator();
 
 
@@ -125,7 +139,8 @@ public class Main {
              Heartbeat detection using gossiping
              **/
             if (true) {
-                System.out.println("INFO : Failure Detection is running GOSSIP mode");
+                // System.out.println("INFO : Failure Detection is running GOSSIP mode");
+                LOG.info("Failure Detection is running GOSSIP mode");
                 startGossip();
                 startConsensus();
             }
@@ -144,14 +159,17 @@ public class Main {
             }
         }
         catch( IllegalArgumentException e ) {
-            System.out.println("ERROR : invalid server ID");
+            // System.out.println("ERROR : invalid server ID");
+            LOG.error("invalid server ID");
         }
         catch ( IndexOutOfBoundsException e) {
-            System.out.println("ERROR : server arguments not provided");
+            // System.out.println("ERROR : server arguments not provided");
+            LOG.error("server arguments not provided");
             e.printStackTrace();
         }
         catch ( IOException e) {
-            System.out.println("ERROR : occurred in main " + Arrays.toString(e.getStackTrace()));
+            // System.out.println("ERROR : occurred in main " + Arrays.toString(e.getStackTrace()));
+            LOG.error("occurred in main"+Arrays.toString(e.getStackTrace()));
         }
 //        catch (InterruptedException e) {
 //            e.printStackTrace();
@@ -159,16 +177,14 @@ public class Main {
     }
 
     private static void initiateCoordinator() {
-        System.out.println("INFO : leader election started");
-        if (Server.getInstance().getOtherServers().isEmpty()){
-            //self is the leader
-        }
-        else{
-                FastBullyAlgorithm IamUp_FBA = new FastBullyAlgorithm("IamUp");
-                new Thread(IamUp_FBA).start();
-//            IamUp_FBA.sendIamUpMessage();
+        // System.out.println("INFO : leader election started");
+        LOG.info("leader election started");
+
+        FastBullyAlgorithm IamUp_FBA = new FastBullyAlgorithm("IamUp");
+        new Thread(IamUp_FBA).start();
+//      IamUp_FBA.sendIamUpMessage();
             
-        }
+
     }
 
     private static void startGossip() {
@@ -177,7 +193,7 @@ public class Main {
             JobDetail gossipJob = JobBuilder.newJob(GossipJob.class)
                     .withIdentity("GOSSIPJOB", "group1").build();
 
-            gossipJob.getJobDataMap().put("aliveErrorFactor", 5);
+            gossipJob.getJobDataMap().put("aliveErrorFactor", 7);
 
             Trigger gossipTrigger = TriggerBuilder
                     .newTrigger()
@@ -192,7 +208,8 @@ public class Main {
             scheduler.scheduleJob(gossipJob, gossipTrigger);
 
         } catch (SchedulerException e) {
-            System.out.println("ERROR : Error in starting gossiping");
+            // System.out.println("ERROR : Error in starting gossiping");
+            LOG.error("Error in starting gossiping");
         }
     }
 
@@ -217,7 +234,8 @@ public class Main {
             scheduler.scheduleJob(consensusJob, consensusTrigger);
 
         } catch (SchedulerException e) {
-            System.out.println("ERROR : Error in starting consensus");
+            // System.out.println("ERROR : Error in starting consensus");
+            LOG.error("Error in starting consensus");
         }
     }
 

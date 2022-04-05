@@ -259,5 +259,9 @@ public class Server {
     public ConcurrentHashMap<String, Integer> getVoteSet() {
         return voteSet;
     }
+
+    public void removeServerInAllServers(Integer serverId){
+        allServers.remove(serverId);
+    }
 }
 

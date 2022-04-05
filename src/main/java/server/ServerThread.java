@@ -7,6 +7,8 @@ import consensus.election.FastBullyAlgorithm;
 import heartbeat.ConsensusJob;
 import heartbeat.GossipJob;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -23,6 +25,8 @@ import java.util.List;
 import java.util.Objects;
 
 public class ServerThread implements Runnable{
+
+    private static final Logger LOG = LogManager.getLogger(ServerThread.class);
 
     private final ServerSocket serverSocket;
 //    private LeaderStateUpdate leaderStateUpdate = new LeaderStateUpdate();
@@ -70,7 +74,8 @@ public class ServerThread implements Runnable{
                     }
                     else if(Objects.equals(type, "leaderstateupdatecomplete")){
                         String serverID = (String) jsonObject.get("serverID");
-                        System.out.println("INFO : leader server "+serverID+" update done");
+                        // System.out.println("INFO : leader server "+serverID+" update done");
+                        LOG.info("INFO : leader server "+serverID+" update done");
 //                        FastBullyAlgorithm FBA = new FastBullyAlgorithm("");
 //                        FBA.stopWaitingForUpdateCompleteMessage();
 //                        Thread.sleep(500);
@@ -191,7 +196,10 @@ public class ServerThread implements Runnable{
                                                 threadID, host, port),
                                         formerServerInfo
                                 );
-                                System.out.println("INFO : Join Room from [" + formerRoomID +
+                                // System.out.println("INFO : Join Room from [" + formerRoomID +
+                                //         "] to [" + roomID + "] for client " + clientID +
+                                //         " is" + (serverIDofTargetRoom != null ? " " : " not ") + "approved");
+                                LOG.info("Join Room from [" + formerRoomID +
                                         "] to [" + roomID + "] for client " + clientID +
                                         " is" + (serverIDofTargetRoom != null ? " " : " not ") + "approved");
                             } catch (Exception e) {
@@ -226,8 +234,10 @@ public class ServerThread implements Runnable{
 
                         Leader.getInstance().addToGlobalClientAndRoomList(clientID, serverID, roomID);
 
-                        System.out.println("INFO : Moved Client [" + clientID + "] to server s" + serverID
-                                + " and room [" + roomID + "] is updated as current room");
+                        // System.out.println("INFO : Moved Client [" + clientID + "] to server s" + serverID
+                        //         + " and room [" + roomID + "] is updated as current room");
+                        LOG.info("INFO : Moved Client [" + clientID + "] to server s" + serverID
+                        + " and room [" + roomID + "] is updated as current room");
                     }
                     else if(Objects.equals(type, "quit")){
                         String clientID = jsonObject.get("clientID").toString();
@@ -235,7 +245,8 @@ public class ServerThread implements Runnable{
                         String serverID = jsonObject.get("serverID").toString();
                         // leader removes client from global room list
                         Leader.getInstance().removeFromGlobalClientAndRoomList(clientID, serverID, formerRoomID);
-                        System.out.println("INFO : Client '" + clientID + "' deleted by leader");
+                        // System.out.println("INFO : Client '" + clientID + "' deleted by leader");
+                        LOG.info("INFO : Client '" + clientID + "' deleted by leader");
                     }
                     else if (Objects.equals(type, "gossip")) {
                         GossipJob.receiveMessages(jsonObject);
@@ -250,7 +261,8 @@ public class ServerThread implements Runnable{
                         ConsensusJob.notifyServerDownMessageHandler(jsonObject);
                     }
                 }else {
-                    System.out.println("WARN : Command error, Corrupted JSON from Server");
+                    // System.out.println("WARN : Command error, Corrupted JSON from Server");
+                    LOG.warn("Command error, Corrupted JSON from Server");
                 }
                 serverSocket.close();
             }

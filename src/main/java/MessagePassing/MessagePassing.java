@@ -2,6 +2,9 @@ package MessagePassing;
 
 //import consensus.LeaderState;
 import consensus.Leader;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -17,6 +20,8 @@ import java.util.ArrayList;
 
 public class MessagePassing
 {
+    private static final Logger LOG = LogManager.getLogger(MessagePassing.class);
+
     public static JSONObject convertToJson(String jsonString)
     {
         JSONObject j_object = null;
@@ -62,12 +67,13 @@ public class MessagePassing
     //send message to server
     public static void sendServer( JSONObject obj, ServerInfo destServer) throws IOException
     {
+        if(destServer!=null){
         Socket socket = new Socket(destServer.getAddress(),
                 destServer.getServerPort());
         DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
         dataOutputStream.write((obj.toJSONString() + "\n").getBytes( StandardCharsets.UTF_8));
         dataOutputStream.flush();
-    }
+    }}
 
     //send broadcast message
     public static void sendServerBroadcast(JSONObject obj, ArrayList<ServerInfo> serverList) {
@@ -78,7 +84,8 @@ public class MessagePassing
                 dataOutputStream.write((obj.toJSONString() + "\n").getBytes(StandardCharsets.UTF_8));
                 dataOutputStream.flush();
             } catch (IOException e) {
-                System.out.println("WARN : server "+each.getServerID()+" is down");
+                // System.out.println("WARN : server "+each.getServerID()+" is down");
+                LOG.warn("server "+each.getServerID()+" is down");
             }
         }
     }
